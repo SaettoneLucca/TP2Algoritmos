@@ -1,0 +1,2 @@
+git config --global user.email "lsaettone@fi.uba.ar"
+git config --global user.name "SaettoneLucca"

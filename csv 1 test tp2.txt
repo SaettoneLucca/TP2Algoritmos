@@ -1,0 +1,2 @@
+Timestamp, Teléfono_celular,-34.61755317745977,-58.368207144117825, ruta_foto, descripción_texto,ruta_audio
+Timestamp, Teléfono_celular,-34.586636285362516, -58.39189869715473, ruta_foto, descripción_texto,ruta_audio
