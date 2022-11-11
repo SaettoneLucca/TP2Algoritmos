@@ -26,9 +26,10 @@ def ubicacion(datos_csv,lista_nueva):
         u = (geolocalizador(coordenada))#ubicacion
         aux.extend(dato)
         aux.pop(2)
-        aux.insert(4,u)
+        aux.insert(3,u)
         aux.pop(2)
         lista_nueva.append(aux)
+    print(lista_nueva)
     return lista_nueva
 
 def write_archivo(lista_nueva,archivo_2):
