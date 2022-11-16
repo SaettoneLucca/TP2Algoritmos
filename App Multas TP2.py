@@ -10,11 +10,10 @@ ARCHIVO_MULTAS = "csvtest.txt"
 ARCHIVO_DIRECCIONES = "csv2.txt"
 
 def menu()->None:
-    opciones:tuple = (1,2,3,4,5,6)
     operaciones:tuple = ("Denuncias cerca de estadios", "Denuncias en cuadrante", "Localizar autos robados", "Ubicacion infraccion por patente", "Grafico mensual de denuncias", "Salir")
 
     for i in range(len(opciones)):
-        print(f"{opciones[i]}. {operaciones[i]}")
+        print(f"{i + 1} - {operaciones[i]}")
 
 #Manipulacion de archivos
 def leer_archivo(nombre_archivo:str)->list:
@@ -58,7 +57,7 @@ def ubicacion(datos_csv)->list:
     lista_datos:list = []
 
     for dato in datos_csv:
-        aux = []
+        aux:list = []
         coordenada = dato[2:4]
         u = (geolocalizador(coordenada))#ubicacion
         direccion_aux:list = u[0:2]
