@@ -12,7 +12,7 @@ ARCHIVO_DIRECCIONES = "csv2.txt"
 def menu()->None:
     operaciones:tuple = ("Denuncias cerca de estadios", "Denuncias en cuadrante", "Localizar autos robados", "Ubicacion infraccion por patente", "Grafico mensual de denuncias", "Salir")
 
-    for i in range(len(opciones)):
+    for i in range(len(operaciones)):
         print(f"{i + 1} - {operaciones[i]}")
 
 #Manipulacion de archivos
