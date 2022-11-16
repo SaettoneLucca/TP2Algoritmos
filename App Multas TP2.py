@@ -94,9 +94,7 @@ def distancia(datos_archivo:list)->None:
     estadio_river =(-34.54479432316617, -58.458104102018275)
     for dato in datos_archivo:
         ubicacion:list = []
-        aux:list = dato[2].split(' ')
-        ubicacion.append(aux[0])
-        ubicacion.append(aux[1])
+        ubicacion.append(dato[2])
         ubicacion.append(dato[3])
         ubicacion.append(dato[4])
         punto = geolocalizador_I(ubicacion)
@@ -129,13 +127,12 @@ def patente_mapa(datos_direcciones):
     """
     user_input = input("ingrese la patente a localizar: ")
     for dato in datos_direcciones:
-        if user_input == dato[5]:
-            ubicacion:list = []
-            ubicacion.append(dato[2])
-            ubicacion.append(dato[3])
-            ubicacion.append(dato[4])
-            coordenadas = geolocalizador_I(ubicacion)
-            map = mapa(coordenadas)
+        ubicacion:list = []
+        ubicacion.append(dato[2])
+        ubicacion.append(dato[3])
+        ubicacion.append(dato[4])
+        coordenadas = geolocalizador_I(ubicacion)
+        map = mapa(coordenadas)
 
 
 def mapa(coordenadas):
