@@ -1,5 +1,8 @@
 from geopy.distance import geodesic as GD
 from geopy.geocoders import Nominatim
+from gmplot import gmplot
+import webbrowser
+
 
 import speech_recognition as sr
 r = sr.Recognizer()
@@ -119,6 +122,39 @@ def distancia(datos_archivo:list)->None:
                 print(f"Timestamp: {multa[0]},Teléfono: {multa[1]}, Dirección de la infracción: {multa[2]}, Localidad: {multa[3]}, Provincia: {multa[4]}, patente: {multa[5]}, {multa[6]}, {multa[7]}\n")
 
 
+
+def patente_mapa(datos_direcciones):
+    """Pre: Recibe una lista con datos de multas(el cvs2)
+    Post: Devuelve la foto asociada a esa patente y un mapa de google indicando donde fue relaizada la denuncia
+    """
+    user_input = input("ingrese la patente a localizar: ")
+    for dato in datos_direcciones:
+        if user_input == dato[5]:
+            ubicacion:list = []
+            ubicacion.append(dato[2])
+            ubicacion.append(dato[3])
+            ubicacion.append(dato[4])
+            coordenadas = geolocalizador_I(ubicacion)
+            map = mapa(coordenadas)
+
+
+def mapa(coordenadas):
+    """Pre: recibe una coordenada
+    Post: devuelve un mapa web con el marcador
+    """
+    #inicializamos el mapa con una cordeenada xy cualesquiera
+    gmap = gmplot.GoogleMapPlotter(-34.611377315283946, -58.3741883957914,13)
+
+    #Agregamos la coordenada
+    gmap.marker(coordenadas, 'cornflowerblue')
+
+    # Pasamos el mapa a un archivo html
+    gmap.draw("my_map.html")
+
+    #abrimos el mapa en google
+    webbrowser.open("my_map.html")
+
+
 #Speech recognition
 def transcribir_audio(ruta_audio:str)->str:
     """Pre: Recibe una ruta de un audio
@@ -192,7 +228,7 @@ def main()->None:
         elif accion == 3:
             pass
         elif accion == 4:
-            pass
+            patente_mapa(datos_direcciones)
         elif accion == 5:
             pass
 
