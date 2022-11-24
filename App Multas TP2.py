@@ -1,16 +1,29 @@
+#import de librerias
 from geopy.distance import geodesic as GD
 from geopy.geocoders import Nominatim
 from gmplot import gmplot
 import webbrowser
 
+import cv2
+import numpy as np 
+import argparse
+import time
+
+
+import imutils
+import keras_ocr
+import matplotlib.pyplot as plt
 
 import speech_recognition as sr
 r = sr.Recognizer()
 
 import csv
 
+#INICIO DEL CODIGO
+
 ARCHIVO_MULTAS = "csvtest.txt"
 ARCHIVO_DIRECCIONES = "csv2.txt"
+ARCHIVO_ROBADOS = "robados.txt"
 
 def menu()->None:
     operaciones:tuple = ("Denuncias cerca de estadios", "Denuncias en cuadrante", "Localizar autos robados", "Ubicacion infraccion por patente", "Grafico mensual de denuncias", "Salir")
@@ -43,6 +56,7 @@ def escribir_archivo(datos_archivo:list,nombre_archivo:str)->None:
                 csv_writer.writerow(line)
     except IOError:
         print("Hubo un problema operando con el archivo")
+
 
 
 #Geopy
@@ -152,32 +166,6 @@ def mapa(coordenadas):
     webbrowser.open("my_map.html")
 
 
-#Speech recognition
-def transcribir_audio(ruta_audio:str)->str:
-    """Pre: Recibe una ruta de un audio
-    Post: Printea en pantalla la trasncripcion del audio"""
-    texto:str = "-"
-    open_audio=sr.AudioFile(ruta_audio)
-    try:
-        with open_audio as source:
-            audio = r.record(source)
-        s = r.recognize_google(audio, language="es-AR")
-        texto = s
-    except IOError:
-        print("Hubo un problema al operar con el archivo de audio")
-    except Exception as e:
-        print("Exception: "+str(e))
-    
-    return texto
-
-def audio_a_texto(datos_multas)->None:
-    print("Convirtiendo audios a textos . . .\n")
-    for multa in datos_multas:
-        ruta_audio:str = multa[6]
-        transcripcion:str = transcribir_audio(ruta_audio)
-        multa[6] = transcripcion
-
-
 #accion == 2
 def cuadrante(datos_multas:list,datos_direcciones:list)->None:
     """Pre: Recibe una lista cargada con multas
@@ -207,13 +195,193 @@ def cuadrante(datos_multas:list,datos_direcciones:list)->None:
             print(f"Timestamp: {multa[0]},Teléfono: {multa[1]}, Dirección de la infracción: {multa[2]}, Localidad: {multa[3]}, Provincia: {multa[4]}, patente{multa[5]}, {multa[6]}, {multa[7]}\n")
 
 
+
+#Speech recognition
+def transcribir_audio(ruta_audio:str)->str:
+    """Pre: Recibe una ruta de un audio
+    Post: Printea en pantalla la trasncripcion del audio"""
+    texto:str = "-"
+    open_audio=sr.AudioFile(ruta_audio)
+    try:
+        with open_audio as source:
+            audio = r.record(source)
+        s = r.recognize_google(audio, language="es-AR")
+        texto = s
+    except IOError:
+        print("Hubo un problema al operar con el archivo de audio")
+    except Exception as e:
+        print("Exception: "+str(e))
+    
+    return texto
+
+def audio_a_texto(datos_multas)->None:
+    print("Convirtiendo audios a textos . . .\n")
+    for multa in datos_multas:
+        ruta_audio:str = multa[6]
+        transcripcion:str = transcribir_audio(ruta_audio)
+        multa[6] = transcripcion
+
+
+
+
+
+## YOLO Obj Detection
+def load_yolo():
+	net = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
+	classes = []
+	with open("coco.names", "r") as f:
+		classes = [line.strip() for line in f.readlines()] 
+	
+	output_layers = [layer_name for layer_name in net.getUnconnectedOutLayersNames()]
+	colors = np.random.uniform(0, 255, size=(len(classes), 3))
+	return net, classes, colors, output_layers
+	
+def load_image(ruta_imagen):
+	# image loading
+	img = cv2.imread(ruta_imagen)
+	img = cv2.resize(img, None, fx=0.4, fy=0.4)
+	height, width, channels = img.shape
+	return img, height, width, channels
+
+
+def detect_objects(img, net, outputLayers):			
+	blob = cv2.dnn.blobFromImage(img, scalefactor=0.00392, size=(320, 320), mean=(0, 0, 0), swapRB=True, crop=False)
+	net.setInput(blob)
+	outputs = net.forward(outputLayers)
+	return blob, outputs
+
+
+def get_box_dimensions(outputs, height, width):
+	boxes = []
+	confs = []
+	class_ids = []
+	for output in outputs:
+		for detect in output:
+			scores = detect[5:]
+			class_id = np.argmax(scores)
+			conf = scores[class_id]
+			if conf > 0.3:
+				center_x = int(detect[0] * width)
+				center_y = int(detect[1] * height)
+				w = int(detect[2] * width)
+				h = int(detect[3] * height)
+				x = int(center_x - w/2)
+				y = int(center_y - h / 2)
+				boxes.append([x, y, w, h])
+				confs.append(float(conf))
+				class_ids.append(class_id)
+	return boxes, confs, class_ids
+
+
+def draw_labels(boxes, confs, colors, class_ids, classes, img): 
+	indexes = cv2.dnn.NMSBoxes(boxes, confs, 0.5, 0.4)
+	font = cv2.FONT_HERSHEY_PLAIN
+	for i in range(len(boxes)):
+		if i in indexes:
+			x, y, w, h = boxes[i]
+			label = str(classes[class_ids[i]])
+			color = colors[i]
+			cv2.rectangle(img, (x,y), (x+w, y+h), color, 2)
+			cv2.putText(img, label, (x, y - 5), font, 1, color, 1)
+	
+	return label
+	
+
+def image_detect(ruta_imagen):
+    #POST:devuelve el objeto encontrado en la foto 
+	model, classes, colors, output_layers = load_yolo()
+	image, height, width, channels = load_image(ruta_imagen)
+	blob, outputs = detect_objects(image, model, output_layers)
+	boxes, confs, class_ids = get_box_dimensions(outputs, height, width)
+	draw_labels(boxes, confs, colors, class_ids, classes, image)
+	objeto = draw_labels(boxes, confs, colors, class_ids, classes, image)
+
+	return objeto
+
+def obj_detection(datos_multas):
+    #pre:recibe una lista de infracciones
+    #post: llama a la funcion patente_a_str si se detecta un auto en la foto
+    for multa in datos_multas:
+        ruta_imagen:str = multa[4]
+        imagen = cv2.imread(ruta_imagen)
+        objeto:str = image_detect(ruta_imagen)
+        print("Opening "+ruta_imagen+" .... ")
+        if objeto == "car":
+            print("El objeto es un auto. Extrayendo patente...")
+            multa[4] = patente_a_str(imagen,datos_multas)
+
+        else:
+            print("El Objeto no es un auto")
+
+
+
+## Keras&Opencv extraccionde patente
+def patente_a_str(imagen,datos_multas):
+    #pre:recibe una imgen y la lista de infracciones
+    #post:extrae la patente del auto, la convierte a str
+    gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY) #convertimos la imagen a blanco y negro
+    gray = cv2.bilateralFilter(gray, 13, 15, 15) #removemos dettales irrelevantes 
+
+    bordes = cv2.Canny(gray, 30, 200) #deteccion de bordes
+
+    #buscamos contornos
+    contornos=cv2.findContours(bordes.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)                                
+    contornos = imutils.grab_contours(contornos)
+    contornos = sorted(contornos,key=cv2.contourArea, reverse = True)[:10]
+    screenCnt = None
+
+    #dentro las formas encontradas, buscamos la que mas se asemeje a un rectangulo cerrado con 4 lados
+    for c in contornos:
+        peri = cv2.arcLength(c, True)
+        approx = cv2.approxPolyDP(c, 0.018 * peri, True)
+        if len(approx) == 4:
+            screenCnt = approx
+            print("se ha encontrado la patente!")
+        else:
+            print("no se ha encontrado la patente")
+
+    #enmascaramos todo lo que no sea la patente
+    mask = np.zeros(gray.shape,np.uint8)
+    new_image = cv2.drawContours(mask,[screenCnt],0,255,-1,)
+    new_image = cv2.bitwise_and(imagen,imagen,mask=mask)
+
+    #croppeamos para que quede solo la patente
+    (x, y) = np.where(mask == 255)
+    (topx, topy) = (np.min(x), np.min(y))
+    (bottomx, bottomy) = (np.max(x), np.max(y))
+    Cropped = gray[topx:bottomx+1, topy:bottomy+1]
+    
+    #cv2.imshow("Image", Cropped)
+    plate = cv2.imwrite("patente.jpeg", Cropped)
+    #cv2.waitKey(0)
+    
+    pipeline = keras_ocr.pipeline.Pipeline()
+    images = [
+        keras_ocr.tools.read(img) for img in ["patente.jpeg"]
+    ]
+
+    prediction_groups = pipeline.recognize(images)
+    patente = []
+    predicted_image = prediction_groups[0]
+    for text, box in predicted_image:
+        patente.append(text)
+
+    joined = "".join(patente)
+    print(joined)
+    
+    return joined
+
 def main()->None:
     #Comenzamos cargando la informacion de los archivos en listas, para su posterior manipulacion
     datos_multas:list = leer_archivo(ARCHIVO_MULTAS)
     audio_a_texto(datos_multas)
 
+    obj_detection(datos_multas)
+
     datos_direcciones:list = ubicacion(datos_multas)
     escribir_archivo(datos_direcciones, ARCHIVO_DIRECCIONES)
+    
+    
 
     menu()
     accion:int = int(input(("Que desea realizar? ")))
