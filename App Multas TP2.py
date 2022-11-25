@@ -9,18 +9,18 @@ import numpy as np
 import argparse
 import time
 
-
 import imutils
 import keras_ocr
 import matplotlib.pyplot as plt
 
+import csv
 import speech_recognition as sr
 r = sr.Recognizer()
 
-import csv
+from termcolor import colored
+
 
 #INICIO DEL CODIGO
-
 ARCHIVO_MULTAS = "csvtest.txt"
 ARCHIVO_DIRECCIONES = "csv2.txt"
 ARCHIVO_ROBADOS = "robados.txt"
@@ -99,6 +99,7 @@ def geolocalizador_I(ubicacion):
     x = (coordenadas.latitude, coordenadas.longitude)
     return x
 
+#accion == 1
 def distancia(datos_archivo:list)->None:
     """Pre: Recibe una lista con datos de multas
     Post: Lista las denuncias relaizadas en un radio de 1km al rededor del estadio de boca y river"""
@@ -134,38 +135,6 @@ def distancia(datos_archivo:list)->None:
                 print(f"Timestamp: {multa[0]},Teléfono: {multa[1]}, Dirección de la infracción: {multa[2]}, Localidad: {multa[3]}, Provincia: {multa[4]}, patente: {multa[5]}, {multa[6]}, {multa[7]}\n")
 
 
-
-def patente_mapa(datos_direcciones):
-    """Pre: Recibe una lista con datos de multas(el cvs2)
-    Post: Devuelve la foto asociada a esa patente y un mapa de google indicando donde fue relaizada la denuncia
-    """
-    user_input = input("ingrese la patente a localizar: ")
-    for dato in datos_direcciones:
-        ubicacion:list = []
-        ubicacion.append(dato[2])
-        ubicacion.append(dato[3])
-        ubicacion.append(dato[4])
-        coordenadas = geolocalizador_I(ubicacion)
-        map = mapa(coordenadas)
-
-
-def mapa(coordenadas):
-    """Pre: recibe una coordenada
-    Post: devuelve un mapa web con el marcador
-    """
-    #inicializamos el mapa con una cordeenada xy cualesquiera
-    gmap = gmplot.GoogleMapPlotter(-34.611377315283946, -58.3741883957914,13)
-
-    #Agregamos la coordenada
-    gmap.marker(coordenadas, 'cornflowerblue')
-
-    # Pasamos el mapa a un archivo html
-    gmap.draw("my_map.html")
-
-    #abrimos el mapa en google
-    webbrowser.open("my_map.html")
-
-
 #accion == 2
 def cuadrante(datos_multas:list,datos_direcciones:list)->None:
     """Pre: Recibe una lista cargada con multas
@@ -195,6 +164,73 @@ def cuadrante(datos_multas:list,datos_direcciones:list)->None:
             print(f"Timestamp: {multa[0]},Teléfono: {multa[1]}, Dirección de la infracción: {multa[2]}, Localidad: {multa[3]}, Provincia: {multa[4]}, patente{multa[5]}, {multa[6]}, {multa[7]}\n")
 
 
+def mapa(coordenadas):
+    """Pre: recibe una coordenada
+    Post: devuelve un mapa web con el marcador
+    """
+    coordenadas = list(coordenadas)
+    #inicializamos el mapa con una cordeenada xy cualesquiera
+    gmap = gmplot.GoogleMapPlotter(-34.611377315283946, -58.3741883957914,13)
+
+    #Agregamos la coordenada
+    gmap.marker(coordenadas[0],coordenadas[1], 'cornflowerblue')
+
+    # Pasamos el mapa a un archivo html
+    gmap.draw("my_map.html")
+
+    #abrimos el mapa en google
+    webbrowser.open("my_map.html")
+
+def foto_patente(ruta_foto):
+    #pre: recibe una ruta de imagen
+    #la imprime por pantalla
+    cv2.imshow("Image", ruta_foto)
+    cv2.waitKey(0)
+
+#accion == 4
+def patente_mapa(datos_direcciones,datos_multas):
+    """Pre: Recibe una lista con datos de multa
+    Post: Devuelve la foto asociada a esa patente y un mapa de google indicando donde fue relaizada la denuncia
+    """
+    patente_x = input("ingrese la patente a localizar: ")
+    for dato in datos_direcciones:
+            if patente_x == dato[5]:
+                ubicacion:list = []
+                ubicacion.append(dato[2])
+                ubicacion.append(dato[3])
+                ubicacion.append(dato[4])
+                coordenadas = geolocalizador_I(ubicacion)
+                map = mapa(coordenadas)
+                for i in datos_multas:
+                    aux:tuple = (i[2],i[3])
+                    if GD(coordenadas,aux).km <= 0.01:
+                        ruta_foto = cv2.imread(i[4])
+                        foto = foto_patente(ruta_foto)
+
+#accion == 3
+def list_of_stolen(datos_direcciones):
+    """pre: recibe una lista de infracciones
+        post: devuelve una alerta,timestamp y ubiccacion si una patente de los robados coincide con uno en infracion"""
+
+    message: str = "ALERTA! AUTOS CON INFRACCIONES QUE COINCIDEN CON AUTOS EN PEDIDO DE CAPTURA"
+    match:list = []
+    robados:list = leer_archivo(ARCHIVO_ROBADOS)
+
+    for robado in robados:
+        for patente in robado:
+            for dato in datos_direcciones:
+                if patente == dato[5]:
+                    aux:list = []
+                    aux.append(dato[0])
+                    aux.append(dato[2])
+                    aux.append(dato[3])
+                    aux.append(dato[4])
+                    aux.append(dato[5])
+                    match.append(aux)
+    if match != None:
+        print(colored(message, 'red'))
+        for i in range(len(match)):
+                print(colored(match[i], 'blue'))
 
 #Speech recognition
 def transcribir_audio(ruta_audio:str)->str:
@@ -223,10 +259,9 @@ def audio_a_texto(datos_multas)->None:
 
 
 
-
-
 ## YOLO Obj Detection
 def load_yolo():
+    #importamos los weight de yolo , los cfg y los coc.names
 	net = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
 	classes = []
 	with open("coco.names", "r") as f:
@@ -237,7 +272,8 @@ def load_yolo():
 	return net, classes, colors, output_layers
 	
 def load_image(ruta_imagen):
-	# image loading
+	#pre: toma la ruta de una imagen
+    #post: devuelve la imagen reconocida y le aplica un resize
 	img = cv2.imread(ruta_imagen)
 	img = cv2.resize(img, None, fx=0.4, fy=0.4)
 	height, width, channels = img.shape
@@ -285,7 +321,7 @@ def draw_labels(boxes, confs, colors, class_ids, classes, img):
 			cv2.putText(img, label, (x, y - 5), font, 1, color, 1)
 	
 	return label
-	
+   
 
 def image_detect(ruta_imagen):
     #POST:devuelve el objeto encontrado en la foto 
@@ -298,77 +334,84 @@ def image_detect(ruta_imagen):
 
 	return objeto
 
-def obj_detection(datos_multas):
+def obj_detection(datos_multas,datos_direcciones):
     #pre:recibe una lista de infracciones
     #post: llama a la funcion patente_a_str si se detecta un auto en la foto
-    for multa in datos_multas:
-        ruta_imagen:str = multa[4]
+    for multa in datos_direcciones:
+        ruta_imagen:str = multa[5]
         imagen = cv2.imread(ruta_imagen)
         objeto:str = image_detect(ruta_imagen)
         print("Opening "+ruta_imagen+" .... ")
         if objeto == "car":
-            print("El objeto es un auto. Extrayendo patente...")
-            multa[4] = patente_a_str(imagen,datos_multas)
+            print("Se ha detectado un auto en la foto. Extrayendo patente...")
+            multa[5] = patente_a_str(imagen,datos_multas)
 
         else:
-            print("El Objeto no es un auto")
+            print("No se ha detectado un auto en la foto")
 
 
 
 ## Keras&Opencv extraccionde patente
-def patente_a_str(imagen,datos_multas):
-    #pre:recibe una imgen y la lista de infracciones
-    #post:extrae la patente del auto, la convierte a str
+def patente_a_str(imagen,datos_multas): 
     gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY) #convertimos la imagen a blanco y negro
-    gray = cv2.bilateralFilter(gray, 13, 15, 15) #removemos dettales irrelevantes 
+    tresh = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY_INV)[1]#pasamos la foto a blanco y negros puros(imagen binaria)
 
-    bordes = cv2.Canny(gray, 30, 200) #deteccion de bordes
+    #buscamos contornos de la imagen(formas)
+    contours = cv2.findContours(tresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]                              
 
-    #buscamos contornos
-    contornos=cv2.findContours(bordes.copy(),cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)                                
-    contornos = imutils.grab_contours(contornos)
-    contornos = sorted(contornos,key=cv2.contourArea, reverse = True)[:10]
-    screenCnt = None
+    #aspect ratio de las patentes argentinas 400/130 = 3.07692307692
+    license_ratio = 3.07692307692
+    min_w = 80
+    max_w = 110
+    min_h = 25
+    max_h = 52
 
-    #dentro las formas encontradas, buscamos la que mas se asemeje a un rectangulo cerrado con 4 lados
-    for c in contornos:
-        peri = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.018 * peri, True)
-        if len(approx) == 4:
-            screenCnt = approx
-            print("se ha encontrado la patente!")
-        else:
-            print("no se ha encontrado la patente")
+    #iteramos sobre los contronos y nos quedamos con los que tengan una relacion de aspecto parecida
+    candidates = []
+    for cnt in contours:
+        x, y, w, h = cv2.boundingRect(cnt)
+        aspect_ratio = float(w) / h
+        if (np.isclose(aspect_ratio, license_ratio, atol=0.7) and
+            (max_w > w > min_w) and
+            (max_h > h > min_h)):
+            candidates.append(cnt)
 
-    #enmascaramos todo lo que no sea la patente
-    mask = np.zeros(gray.shape,np.uint8)
-    new_image = cv2.drawContours(mask,[screenCnt],0,255,-1,)
-    new_image = cv2.bitwise_and(imagen,imagen,mask=mask)
+    #para estar seguro de que nos quedamos con la patente, nos quedamos con la forma que este mas abajo de la imagen, ay que las patentes
+    #se encuentran en la parte inferior del auto
+    ys = []
+    for cnt in candidates:
+        x, y, w, h = cv2.boundingRect(cnt)
+        ys.append(y)
+    license = candidates[np.argmax(ys)]
 
-    #croppeamos para que quede solo la patente
-    (x, y) = np.where(mask == 255)
-    (topx, topy) = (np.min(x), np.min(y))
-    (bottomx, bottomy) = (np.max(x), np.max(y))
-    Cropped = gray[topx:bottomx+1, topy:bottomy+1]
-    
-    #cv2.imshow("Image", Cropped)
+    #croppeamos la patente del resto
+    x, y, w, h = cv2.boundingRect(license)
+    Cropped = imagen[y:y+h,x:x+w]
+
+    #volvemos a pasarlo a blanco y negro
+    gray_cropped = cv2.cvtColor(Cropped, cv2.COLOR_BGR2GRAY)
+    tresh_cropped = cv2.adaptiveThreshold(gray_cropped, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 7, 13)
+
+    #guardamos la patnete
     plate = cv2.imwrite("patente.jpeg", Cropped)
-    #cv2.waitKey(0)
-    
+
+    #extraemos el texto de la patente
     pipeline = keras_ocr.pipeline.Pipeline()
     images = [
         keras_ocr.tools.read(img) for img in ["patente.jpeg"]
     ]
 
     prediction_groups = pipeline.recognize(images)
+
     patente = []
+
     predicted_image = prediction_groups[0]
     for text, box in predicted_image:
         patente.append(text)
 
     joined = "".join(patente)
     print(joined)
-    
+
     return joined
 
 def main()->None:
@@ -376,11 +419,14 @@ def main()->None:
     datos_multas:list = leer_archivo(ARCHIVO_MULTAS)
     audio_a_texto(datos_multas)
 
-    obj_detection(datos_multas)
 
     datos_direcciones:list = ubicacion(datos_multas)
+    obj_detection(datos_multas,datos_direcciones)
+
     escribir_archivo(datos_direcciones, ARCHIVO_DIRECCIONES)
-    
+
+    #print(datos_multas)
+    #print(datos_direcciones)
     
 
     menu()
@@ -391,9 +437,9 @@ def main()->None:
         elif accion == 2:
             cuadrante(datos_multas,datos_direcciones)
         elif accion == 3:
-            pass
+            list_of_stolen(datos_direcciones)
         elif accion == 4:
-            patente_mapa(datos_direcciones)
+            patente_mapa(datos_direcciones,datos_multas)
         elif accion == 5:
             pass
 
