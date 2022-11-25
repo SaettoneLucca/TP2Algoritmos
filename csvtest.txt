@@ -1,5 +1,5 @@
-2022-10-30 -- 14:00,1154782240,-34.61543074479784,-58.38416412730485,ruta_foto,Ford fiesta estacionado sobre la vereda,Infraccion1.wav
-2022-09-12 -- 10:20,1138649237,-34.57832124201978,-58.43971556139552,ruta_foto,Fiat punto estacionado en contramano,Infraccion2_1_.wav
-2022-11-18 -- 19:02,1138649237,-34.635307595420514,-58.367584928075914,ruta_foto,Volkswagen Gol estacionado muy alejado del cordon,Infraccion4_1_.wav
-2022-11-22 -- 7:17,1138649237,-34.640896503301,-58.368002104322954,ruta_foto,Camaro estacionado con dos ruedas sobre el cordon,Infraccion5_1_.wav
-2022-10-08 -- 9:00,1138649237,-34.60385914222717, -58.38728360170183,patente5.jpg,Renault 12 estacionado en cordon amarillo,Infraccion6_1_.wav
+2022-10-30 -- 14:00,1154782240,-34.61543074479784,-58.38416412730485,peugot1.png,Ford fiesta estacionado sobre la vereda,Infraccion1.wav
+2022-09-12 -- 10:20,1138649237,-34.57832124201978,-58.43971556139552,peugot2.png,Fiat punto estacionado en contramano,Infraccion2_1_.wav
+2022-11-22 -- 7:17,1138649237,-34.640896503301,-58.368002104322954,renault1.png,Camaro estacionado con dos ruedas sobre el cordon,Infraccion5_1_.wav
+2022-10-08 -- 9:00,1138649237,-34.60385914222717,-58.38728360170183,renault2.png,Renault 12 estacionado en cordon amarillo,Infraccion6_1_.wav
+2022-11-18 -- 19:02,1138649237,-34.635307595420514,-58.367584928075914,toyota1.png,Volkswagen Gol estacionado muy alejado del cordon,Infraccion4_1_.wav

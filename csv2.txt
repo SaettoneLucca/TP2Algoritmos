@@ -1,1 +1,5 @@
-
+2022-10-30 -- 14:00,1154782240,1285 México, Monserrat, Buenos Aires,ad023do,Ford fiesta estacionado sobre la vereda,hay un auto mal estacionado sobre la Vereda en México 1285
+2022-09-12 -- 10:20,1138649237,2115 Dorrego, Palermo, Buenos Aires,ac883rj,Fiat punto estacionado en contramano,en dorrego 2115 hay un auto estacionado en contramano
+2022-11-22 -- 7:17,1138649237,1227 Magallanes, La Boca, Buenos Aires,ad440cy,Camaro estacionado con dos ruedas sobre el cordon,auto estacionado en cordón amarillo en Magallanes 1227
+2022-10-08 -- 9:00,1138649237,1447 Avenida Corrientes, San Nicolás, Buenos Aires,ac017tu,Renault 12 estacionado en cordon amarillo,auto estacionado en cordón amarillo en Avenida corrientes 1447
+2022-11-18 -- 19:02,1138649237,1042 Aristóbulo Del Valle, La Boca, Buenos Aires,ac724yo,Volkswagen Gol estacionado muy alejado del cordon,en del Valle al 1042 hay un auto estacionado con dos ruedas sobre el cordón
