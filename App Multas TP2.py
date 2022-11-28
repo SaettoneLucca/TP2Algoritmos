@@ -14,6 +14,7 @@ import csv
 import speech_recognition as sr
 r = sr.Recognizer()
 from termcolor import colored
+import os
 
 #INICIO DEL CODIGO
 ARCHIVO_MULTAS = "csvtest.txt"
@@ -30,6 +31,7 @@ def validate_patent_parts(validate_value: str) -> bool:
     part3 = (validate_value[5::1]).isalpha()
     if part1 == False or part2 == False or part3 == False:
         valid = False
+        print("ERROR. La pantente no es valida o está mal escrita.")
     else:
         valid = True
     return valid
@@ -54,6 +56,7 @@ def comprobar_opciones(comprobar_menu: int, rango_inicio: int, rango_final: int)
     return comprobar_menu
 
 def menu() -> None:
+    print("Menu:")
     operation: tuple = ("Denuncias cerca de estadios", "Denuncias en cuadrante", "Localizar autos robados", 
                          "Ubicacion infraccion por patente", "Grafico mensual de denuncias", "Salir")
     for i in range(len(operation)):
@@ -214,18 +217,18 @@ def patente_mapa(datos_direcciones, datos_multas):
     """
     patente_x: str = validate_patent(input("Ingrese la patente a localizar: "))
     for dato in datos_direcciones:
-            if patente_x == dato[5]:
-                ubicacion: list = []
-                ubicacion.append(dato[2])
-                ubicacion.append(dato[3])
-                ubicacion.append(dato[4])
-                coordenadas = geolocalizador_I(ubicacion)
-                map = mapa(coordenadas)
-                for i in datos_multas:
-                    aux: tuple = (i[2],i[3])
-                    if GD(coordenadas,aux).km <= 0.01:
-                        ruta_foto = cv2.imread(i[4])
-                        foto = foto_patente(ruta_foto)
+        if patente_x == dato[5]:
+            ubicacion: list = []
+            ubicacion.append(dato[2])
+            ubicacion.append(dato[3])
+            ubicacion.append(dato[4])
+            coordenadas = geolocalizador_I(ubicacion)
+            map = mapa(coordenadas)
+            for i in datos_multas:
+                aux: tuple = (i[2],i[3])
+                if GD(coordenadas,aux).km <= 0.01:
+                    ruta_foto = cv2.imread(i[4])
+                    foto = foto_patente(ruta_foto)
 
 
 #accion == 3
@@ -420,9 +423,10 @@ def main() -> None:
     escribir_archivo(datos_direcciones, ARCHIVO_DIRECCIONES)
     #print(datos_multas)
     #print(datos_direcciones)
-
+    
+    os.system('cls')
     menu()
-    action: int = int(comprobar_valor_numerico(input("¿Qué desea realizar?")))
+    action: int = int(comprobar_valor_numerico(input("¿Qué desea realizar? ")))
     action = int(comprobar_opciones(action, 1, 6))
     while (action != 6):
         if action == 1:
@@ -436,7 +440,7 @@ def main() -> None:
         elif action == 5:
             pass
         menu()
-        action: int = int(comprobar_valor_numerico(input("¿Qué desea realizar?")))
+        action: int = int(comprobar_valor_numerico(input("¿Qué desea realizar? ")))
         action = int(comprobar_opciones(action, 1, 6))
 
 main()
