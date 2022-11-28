@@ -1,4 +1,4 @@
-#import de librerias
+#Import de librerias
 from geopy.distance import geodesic as GD
 from geopy.geocoders import Nominatim
 from gmplot import gmplot
@@ -16,10 +16,47 @@ r = sr.Recognizer()
 from termcolor import colored
 import os
 
-#INICIO DEL CODIGO
-ARCHIVO_MULTAS = "csvtest.txt"
-ARCHIVO_DIRECCIONES = "csv2.txt"
-ARCHIVO_ROBADOS = "robados.txt"
+#Inicio de codigo
+FILE_FINES = "csvtest.txt"
+FILE_DIRECTIONS = "csv2.txt"
+FILE_STOLEN = "robados.txt"
+
+def validate_patent_parts(validate_value: str) -> bool:
+    """ Pre: Recibe una patente. Parte la patente en partes.
+        Post: Valida que esté bien escrita y devuelve Verdadero o Falso."""
+    valid: bool = False
+    part1: bool = False
+    part2: bool = False
+    part3: bool = False
+    part1 = (validate_value[:2:1]).isalpha()
+    part2 = (validate_value[2:5:1]).isnumeric()
+    part3 = (validate_value[5::1]).isalpha()
+    if part1 == False or part2 == False or part3 == False:
+        valid = False
+    else:
+        valid = True
+    return valid
+
+def validate_patent(validate_value: str) -> str:
+    """ Pre: Recibe una patente cualquiera.
+        Post: Devuelve una patente que esté bien escrita."""
+    while not validate_patent_parts(validate_value):
+        validate_value: str = input("Ingrese la patente a localizar: ")
+    return validate_value
+
+def validate_numeric_valor(validate_value: str) -> int:
+    """ Pre: Comprueba que el número ingresado por el usuario sea un valor númerico
+        Post: Una vez que el usuario ingresa un número, lo transforma a numero entero y lo devuelve."""
+    while not validate_value.isnumeric():
+        validate_value: str = input("Error no ingresó un numero. Ingrese un número correspondiente : ")
+    return int(validate_value)
+
+def validate_option_range(validate_value: int, start_value: int, final_value: int) -> int:
+    """ Pre: Comprueba que el número ingresado por el usuario se encuentro entre un cierto rango
+        Post: Una vez que el usuario ingresa un número en este rango, lo transforma a numero entero y lo devuelve."""
+    while (validate_value < start_value or validate_value > final_value):
+        validate_value = int(validate_numeric_valor(input(f"Error. No eligió ninguna de las opciones. Eliga una de las opciones de {start_value} a {final_value}: ")))
+    return validate_value
 
 def validate_patent_parts(validate_value: str) -> bool:
     valid: bool = False
@@ -63,192 +100,181 @@ def menu() -> None:
         print(f"{i + 1} - {operation[i]}")
 
 #Manipulacion de archivos
-def leer_archivo(nombre_archivo: str) -> list:
-    """Pre: Recibe una ruta de archivo y una lista de datos vacia
-    Post: Rellena la lista vacia con los datos del archivo"""
-    datos_archivo: list = []
+def read_file(name_file: str) -> list:
+    """ Pre: Recibe una ruta de archivo y una lista de datos vacia.
+        Post: Rellena la lista vacia con los datos del archivo."""
+    data_file: list = []
     try:    
-        with open(nombre_archivo, "r", newline = "", encoding = "UTF-8") as archivo:
-            csv_reader = csv.reader(archivo, delimiter = ",")
-            for linea in csv_reader:
-                datos_archivo.append(linea)
+        with open(name_file, "r", newline = "", encoding = "UTF-8") as file:
+            csv_reader = csv.reader(file, delimiter = ",")
+            for line in csv_reader:
+                data_file.append(line)
     except IOError:
         print("ERROR read_file: Hubo un problema operando con el archivo")
-    return datos_archivo
+    return data_file
 
-def escribir_archivo(datos_archivo: list, nombre_archivo: str) -> None:
-    """Pre: Recibe una ruta de un archivo y una lista con datos
-    Post: Reescribe el archivo con los datos de la lista"""
+def write_file(data_file: list, name_file: str) -> None:
+    """ Pre: Recibe una ruta de un archivo y una lista con datos.
+        Post: Reescribe el archivo con los datos de la lista."""
     try:
-        with open(nombre_archivo, "w", newline = "", encoding = "UTF-8") as archivo:
-            csv_writer = csv.writer(archivo, delimiter = ",")
-            for line in datos_archivo:
+        with open(name_file, "w", newline = "", encoding = "UTF-8") as file:
+            csv_writer = csv.writer(file, delimiter = ",")
+            for line in data_file:
                 csv_writer.writerow(line)
     except IOError:
         print("ERROR write_file: Hubo un problema operando con el archivo")
 
 #Geopy
-def geolocalizador(coordenada):
-    """Pre: Recibe una coordenada
-    Post:convierte latitud y longitud a una dirreccion"""
+def geolocalizator(coordinate):
+    """ Pre: Recibe una coordenada.
+        Post: Convierte latitud y longitud a una direccion."""
     geolocator = Nominatim(user_agent = "multas")
-    ubicacion_coordenada = geolocator.reverse(coordenada)
-    x = str(ubicacion_coordenada).split(",")
+    coordinate_location = geolocator.reverse(coordinate)
+    x = str(coordinate_location).split(",")
     y = x[0:4]
     return y
 
-def ubicacion(datos_csv)->list:
-    lista_datos: list = []
-    for dato in datos_csv:
+def location(info_cvs)->list:
+    data_list: list = []
+    for data in info_cvs:
         aux: list = []
-        coordenada = dato[2:4]
-        u = (geolocalizador(coordenada)) #ubicacion
-        direccion_aux: list = u[0:2]
-        direccion: str = ("".join(direccion_aux))
-        localidad: str = u[2]
-        provincia: str = u[3]
-        aux.extend(dato)
+        coordinate = data[2:4]
+        u = (geolocalizator(coordinate)) #ubicacion
+        location_aux: list = u[0:2]
+        location: str = ("".join(location_aux))
+        locality: str = u[2]
+        province: str = u[3]
+        aux.extend(data)
         aux.pop(2)
-        aux.insert(3, direccion)
-        aux.insert(4, localidad)
-        aux.insert(5, provincia)
+        aux.insert(3, location)
+        aux.insert(4, locality)
+        aux.insert(5, province)
         aux.pop(2)
-        lista_datos.append(aux)
-    return lista_datos
+        data_list.append(aux)
+    return data_list
 
-def geolocalizador_I(ubicacion):
-    """Pre: Recibe una ubicacion de una multa
-    Post:Convierte una direccion a coordenadas"""
+def geolocalizator_I(location):
+    """ Pre: Recibe una ubicacion de una multa.
+        Post: Convierte una ubicacion a coordenadas."""
     geolocator = Nominatim(user_agent = "multas")
-    coordenadas = geolocator.geocode(ubicacion)
-    x = (coordenadas.latitude, coordenadas.longitude)
+    coordinates = geolocator.geocode(location)
+    x = (coordinates.latitude, coordinates.longitude)
     return x
 
-#accion == 1
-def distancia(datos_archivo: list) -> None:
-    """Pre: Recibe una lista con datos de multas
-    Post: Lista las denuncias relaizadas en un radio de 1km al rededor del estadio de boca y river"""
-    denuncias_boca: list = []
-    denuncias_river: list = []
-    estadio_boca = (-34.63606363146764, -58.36482460201631)
-    estadio_river = (-34.54479432316617, -58.458104102018275)
-    for dato in datos_archivo:
-        ubicacion: list = []
-        ubicacion.append(dato[2])
-        ubicacion.append(dato[3])
-        ubicacion.append(dato[4])
-        punto = geolocalizador_I(ubicacion)
-        if GD(estadio_boca,punto).km <= 1:
-            denuncias_boca.append(dato)
-        elif GD(estadio_river,punto).km <= 1:
-            denuncias_river.append(dato)
-    
-    print("Denuncias cerca de los estadios de boca y river: \n")
-    print("Denuncias a 1km del estadio de Boca:")
-    if len(denuncias_boca) == 0:
-        print("No hay denuncias cerca de la cancha de Boca\n")
-    else:    
-        for multa in denuncias_boca:
-                print(f"Timestamp: {multa[0]},Teléfono: {multa[1]}, Dirección de la infracción: {multa[2]}, Localidad: {multa[3]}, Provincia: {multa[4]}, patente: {multa[5]}, {multa[6]}, {multa[7]}\n")
+#action == 1
+def distance(data_file: list) -> None:
+    """ Pre: Recibe una lista con datos de multas.
+        Post: Lista las denuncias realizadas en un radio de 1 km alrededor del estadio de Boca y River."""
+    fines_Boca: list = []
+    fines_River: list = []
+    Boca_stadium = (-34.63606363146764, -58.36482460201631)
+    River_stadium = (-34.54479432316617, -58.458104102018275)
+    for data in data_file:
+        location: list = []
+        location.append(data[2])
+        location.append(data[3])
+        location.append(data[4])
+        dot = geolocalizator_I(location)
+        if GD(Boca_stadium, dot).km <= 1:
+            fines_Boca.append(data)
+        elif GD(River_stadium, dot).km <= 1:
+            fines_River.append(data)
 
-    print("Denuncias a 1km del estadio de River:")
-    if len(denuncias_river) == 0:
-        print("No hay denuncias cerca de la cancha de River\n")
+    print("Denuncias cerca de los estadios de Boca y River:\n")
+    print("Denuncias a 1 km del Estadio de Boca:")
+    if len(fines_Boca) == 0:
+        print("No hay denuncias cerca del Estadio de Boca\n")
     else:    
-        for multa in denuncias_river:
-                print(f"Timestamp: {multa[0]},Teléfono: {multa[1]}, Dirección de la infracción: {multa[2]}, Localidad: {multa[3]}, Provincia: {multa[4]}, patente: {multa[5]}, {multa[6]}, {multa[7]}\n")
+        for fines in fines_Boca:
+                print(f"Timestamp: {fines[0]}, Teléfono: {fines[1]}, Dirección de la infracción: {fines[2]}, Localidad: {fines[3]}, Provincia: {fines[4]}, Patente: {fines[5]}, {fines[6]}, {fines[7]}\n")
+    print("Denuncias a 1 km del Estadio de River:")
+    if len(fines_River) == 0:
+        print("No hay denuncias cerca del Estadio de River\n")
+    else:    
+        for fines in fines_River:
+                print(f"Timestamp: {fines[0]}, Teléfono: {fines[1]}, Dirección de la infracción: {fines[2]}, Localidad: {fines[3]}, Provincia: {fines[4]}, Patente: {fines[5]}, {fines[6]}, {fines[7]}\n")
 
-#accion == 2
-def cuadrante(datos_multas: list, datos_direcciones: list) -> None:
-    """Pre: Recibe una lista cargada con multas
-    Post: Imprime por pantalla las multas en el cuadrante dado por las avenidas"""
-    
+#action == 2
+def quadrant(data_fines: list, data_directions: list) -> None:
+    """Pre: Recibe una lista cargada con multas.
+    Post: Imprime por pantalla las multas en el cuadrante dado por las avenidas."""
     #El cuadrante formado por las avenidas forma una especie de cuadrado,
-    #entonces puedo tomar los datos de las long y latitudes max y min.
-    longitud_max: float = -58.3711
-    longitud_min: float = -58.39203
-    latitud_max: float = -34.59841
-    latitud_min: float = -34.60916
-    lista_multas_cuadrante: list = []
-
-    for i in range(len(datos_multas)):   
-        coordenada: list = []
-        coordenada.append(float(datos_multas[i][2]))
-        coordenada.append(float(datos_multas[i][3]))
-
-        if ((coordenada[0]>latitud_min) and (coordenada[0]<latitud_max)) and ((coordenada[1]>longitud_min)
-             and (coordenada[1]<longitud_max)):
-            lista_multas_cuadrante.append(datos_direcciones[i])
-
-    if len(lista_multas_cuadrante) == 0:
+    #entonces puedo tomar los datos de las longitud y latitudes max y min.
+    length_max: float = -58.3711
+    length_min: float = -58.39203
+    latitude_max: float = -34.59841
+    latitude_min: float = -34.60916
+    list_fines_quadrant: list = []
+    for i in range(len(data_fines)):   
+        coordinate: list = []
+        coordinate.append(float(data_fines[i][2]))
+        coordinate.append(float(data_fines[i][3]))
+        if ((coordinate[0] > latitude_min) and (coordinate[0] < latitude_max)) and ((coordinate[1] > length_min)
+             and (coordinate[1] < length_max)):
+            list_fines_quadrant.append(data_directions[i])
+    if len(list_fines_quadrant) == 0:
         print("No hay multas cargadas en el cuadrante\n")
     else:
         print("Multas en el cuadrante de las Avenidas:\n")
-        for multa in lista_multas_cuadrante:
-            print(f"Timestamp: {multa[0]},Teléfono: {multa[1]}, Dirección de la infracción: {multa[2]}, Localidad: {multa[3]}, Provincia: {multa[4]}, patente{multa[5]}, {multa[6]}, {multa[7]}\n")
+        for fines in list_fines_quadrant:
+            print(f"Timestamp: {fines[0]}, Teléfono: {fines[1]}, Dirección de la infracción: {fines[2]}, Localidad: {fines[3]}, Provincia: {fines[4]}, Patente: {fines[5]}, {fines[6]}, {fines[7]}\n")
 
-def mapa(coordenadas):
-    """Pre: recibe una coordenada
-    Post: devuelve un mapa web con el marcador
-    """
-    coordenadas = list(coordenadas)
-    #inicializamos el mapa con una cordeenada xy cualesquiera
+def map(coordinates):
+    """ Pre: Recibe una coordenada.
+        Post: Devuelve un mapa web con el marcador."""
+    coordinates_aux = list(coordinates)
+    #Inicializamos el mapa con una coordenada xy cualesquiera
     gmap = gmplot.GoogleMapPlotter(-34.611377315283946, -58.3741883957914,13)
-
-    #Agregamos la coordenada
-    gmap.marker(coordenadas[0],coordenadas[1], 'cornflowerblue')
-
-    # Pasamos el mapa a un archivo html
+    #Agregamos la coordinate
+    gmap.marker(coordinates_aux[0], coordinates_aux[1], 'cornflowerblue')
+    #Pasamos el mapa a un archivo html
     gmap.draw("my_map.html")
-
-    #abrimos el mapa en google
+    #Abrimos el mapa en google
     webbrowser.open("my_map.html")
 
-def foto_patente(ruta_foto):
-    #pre: recibe una ruta de imagen
-    #la imprime por pantalla
-    cv2.imshow("Image", ruta_foto)
+def patent_photo(photo_route):
+    """ Pre: Recibe una ruta de imagen. 
+        Post: La imprime por pantalla."""
+    cv2.imshow("Image", photo_route)
     cv2.waitKey(0)
 
-#accion == 4
-def patente_mapa(datos_direcciones, datos_multas):
-    """Pre: Recibe una lista con datos de multa
-    Post: Devuelve la foto asociada a esa patente y un mapa de google indicando donde fue relaizada la denuncia
-    """
-    patente_x: str = validate_patent(input("Ingrese la patente a localizar: "))
-    for dato in datos_direcciones:
-        if patente_x == dato[5]:
-            ubicacion: list = []
-            ubicacion.append(dato[2])
-            ubicacion.append(dato[3])
-            ubicacion.append(dato[4])
-            coordenadas = geolocalizador_I(ubicacion)
-            map = mapa(coordenadas)
-            for i in datos_multas:
-                aux: tuple = (i[2],i[3])
-                if GD(coordenadas,aux).km <= 0.01:
-                    ruta_foto = cv2.imread(i[4])
-                    foto = foto_patente(ruta_foto)
+#action == 4
+def patent_map(data_directions, data_fines):
+    """ Pre: Recibe una lista con datos de multas.
+        Post: Devuelve la foto asociada a esa patente y un mapa de google indicando donde fue realizada la denuncia."""
+    patent_x: str = validate_patent(input("Ingrese la patente a localizar: "))
+    for data in data_directions:
+            if patent_x == data[5]:
+                location: list = []
+                location.append(data[2])
+                location.append(data[3])
+                location.append(data[4])
+                coordinates = geolocalizator_I(location)
+                map = map(coordinates)
+                for i in data_fines:
+                    aux: tuple = (i[2],i[3])
+                    if GD(coordinates, aux).km <= 0.01:
+                        photo_route = cv2.imread(i[4])
+                        foto = patent_photo(photo_route)
 
 
-#accion == 3
-def list_of_stolen(datos_direcciones):
-    """pre: recibe una lista de infracciones
-        post: devuelve una alerta,timestamp y ubiccacion si una patente de los robados coincide con uno en infracion"""
-
+#action == 3
+def list_of_stolen(data_directions):
+    """ Pre: Recibe una lista de infracciones
+        Post: Devuelve una alerta con tiempo y ubicación si una patente de los robados coincide con uno en infración"""
     message: str = "ALERTA! AUTOS CON INFRACCIONES QUE COINCIDEN CON AUTOS EN PEDIDO DE CAPTURA"
     match: list = []
-    robados: list = leer_archivo(ARCHIVO_ROBADOS)
-    for robado in robados:
-        for patente in robado:
-            for dato in datos_direcciones:
-                if patente == dato[5]:
+    stolen: list = read_file(FILE_STOLEN)
+    for stole in stolen:
+        for patent in stole:
+            for data in data_directions:
+                if patent == data[5]:
                     aux: list = []
-                    aux.append(dato[0])
-                    aux.append(dato[2])
-                    aux.append(dato[3])
-                    aux.append(dato[4])
-                    aux.append(dato[5])
+                    aux.append(data[0])
+                    aux.append(data[2])
+                    aux.append(data[3])
+                    aux.append(data[4])
+                    aux.append(data[5])
                     match.append(aux)
     if match != None:
         print(colored(message, 'red'))
@@ -257,47 +283,45 @@ def list_of_stolen(datos_direcciones):
 
 
 #Speech recognition
-def transcribir_audio(ruta_audio: str) -> str:
-    """Pre: Recibe una ruta de un audio
-    Post: Printea en pantalla la trasncripcion del audio"""
-    texto: str = "-"
-    open_audio = sr.AudioFile(ruta_audio)
+def transcrip_audio(audio_route: str) -> str:
+    """ Pre: Recibe una ruta de un audio.
+        Post: Printea en pantalla la trasncripcion del audio."""
+    text: str = "-"
+    open_audio = sr.AudioFile(audio_route)
     try:
         with open_audio as source:
             r.adjust_for_ambient_noise(source)
             audio = r.record(source)
-        s = r.recognize_google(audio, language="es-AR")
-        texto = s
+        text = r.recognize_google(audio, language = "es-AR")
     except IOError:
-        print("Hubo un problema al operar con el archivo de audio")
+        print("Hubo un problema al operar con el archivo de audio.")
     except Exception as e:
-        print("Exception: "+str(e))
-    return texto
+        print("Excepsión: " + str(e))
+    return text
 
-def audio_a_texto(datos_multas)->None:
+def audio_to_text(data_fines) -> None:
     print("Convirtiendo audios a textos . . .\n")
-    for multa in datos_multas:
-        ruta_audio: str = multa[6]
-        transcripcion: str = transcribir_audio(ruta_audio)
-        multa[6] = transcripcion
+    for fines in data_fines:
+        audio_route: str = fines[6]
+        transcripcion: str = transcrip_audio(audio_route)
+        fines[6] = transcripcion
 
 
 ## YOLO Obj Detection
 def load_yolo():
-    #importamos los weight de yolo , los cfg y los coc.names
+    #Importamos los weight de yolo , los cfg y los coc.names
 	net = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
 	classes = []
 	with open("coco.names", "r") as f:
 		classes = [line.strip() for line in f.readlines()] 
-	
 	output_layers = [layer_name for layer_name in net.getUnconnectedOutLayersNames()]
 	colors = np.random.uniform(0, 255, size = (len(classes), 3))
 	return net, classes, colors, output_layers
 	
-def load_image(ruta_imagen):
-	#pre: toma la ruta de una imagen
-    #post: devuelve la imagen reconocida y le aplica un resize
-	img = cv2.imread(ruta_imagen)
+def load_image(img_route):
+	""" Pre: Toma la ruta de una imagen.
+        Post: Devuelve la imagen reconocida y le aplica un resize(cambio de tamaño)."""
+	img = cv2.imread(img_route)
 	img = cv2.resize(img, None, fx=0.4, fy=0.4)
 	height, width, channels = img.shape
 	return img, height, width, channels
@@ -341,106 +365,104 @@ def draw_labels(boxes, confs, colors, class_ids, classes, img):
 			cv2.putText(img, label, (x, y - 5), font, 1, color, 1)	
 	return label
    
-def image_detect(ruta_imagen):
-    #POST:devuelve el objeto encontrado en la foto 
-	model, classes, colors, output_layers = load_yolo()
-	image, height, width, channels = load_image(ruta_imagen)
-	blob, outputs = detect_objects(image, model, output_layers)
-	boxes, confs, class_ids = get_box_dimensions(outputs, height, width)
-	draw_labels(boxes, confs, colors, class_ids, classes, image)
-	objeto = draw_labels(boxes, confs, colors, class_ids, classes, image)
-	return objeto
+def image_detect(img_route):
+    """Post: Devuelve el objeto encontrado en la foto."""
+    model, classes, colors, output_layers = load_yolo()
+    image, height, width, channels = load_image(img_route)
+    blob, outputs = detect_objects(image, model, output_layers)
+    boxes, confs, class_ids = get_box_dimensions(outputs, height, width)
+    draw_labels(boxes, confs, colors, class_ids, classes, image)
+    obj = draw_labels(boxes, confs, colors, class_ids, classes, image)
+    return obj
 
-def obj_detection(datos_multas, datos_direcciones):
-    #pre:recibe una lista de infracciones
-    #Post: llama a la funcion patente_a_str si se detecta un auto en la foto
-    for multa in datos_direcciones:
-        ruta_imagen: str = multa[5]
-        imagen = cv2.imread(ruta_imagen)
-        objeto: str = image_detect(ruta_imagen)
-        print("Opening " + ruta_imagen + " .... ")
-        if objeto == "car":
+def obj_detection(data_fines, data_directions):
+    """ Pre: Recibe una lista de infracciones.
+        Post: Llama a la funcion patent_to_text si se detecta un auto en la foto."""
+    for fines in data_directions:
+        img_route: str = fines[5]
+        imagen = cv2.imread(img_route)
+        obj: str = image_detect(img_route)
+        print("Opening " + img_route + " .... ")
+        if obj == "car":
             print("Se ha detectado un auto en la foto. Extrayendo patente...")
-            multa[5] = patente_a_str(imagen, datos_multas)
+            fines[5] = patent_to_text(imagen, data_fines)
         else:
-            print("No se ha detectado un auto en la foto")
+            print("No se ha detectado un auto en la foto.")
 
 
-## Keras&Opencv extraccionde patente
-def patente_a_str(imagen,datos_multas): 
-    gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY) #convertimos la imagen a blanco y negro
-    tresh = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY_INV)[1] #pasamos la foto a blanco y negros puros(imagen binaria)
-    #buscamos contornos de la imagen(formas)
+## Keras&Opencv extraccion de patent
+def patent_to_text(imagen, data_fines): 
+    gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY) #Convertimos la imagen a blanco y negro
+    tresh = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY_INV)[1] #Pasamos la foto a blanco y negros puros(imagen binaria)
+    #Buscamos contornos de la imagen(formas)
     contours = cv2.findContours(tresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]                              
-    #aspect ratio de las patentes argentinas 400/130 = 3.07692307692
+    #Aspect ratio de las patentes argentinas 400/130 = 3.07692307692
     license_ratio = 3.07692307692
     min_w = 80
     max_w = 110
     min_h = 25
     max_h = 52
-    #iteramos sobre los contronos y nos quedamos con los que tengan una relacion de aspecto parecida
+    #Iteramos sobre los contronos y nos quedamos con los que tengan una relacion de aspecto parecida
     candidates = []
     for cnt in contours:
         x, y, w, h = cv2.boundingRect(cnt)
         aspect_ratio = float(w) / h
-        if (np.isclose(aspect_ratio, license_ratio, atol=0.7) and
+        if (np.isclose(aspect_ratio, license_ratio, atol = 0.7) and
             (max_w > w > min_w) and (max_h > h > min_h)):
             candidates.append(cnt)
-    #para estar seguro de que nos quedamos con la patente, nos quedamos con la forma que este mas abajo de la imagen, ay que las patentes
-    #se encuentran en la parte inferior del auto
+    """Para estar seguro de que nos quedamos con la patente, nos quedamos con la forma que 
+    este más abajo de la imagen, hay que las patentes se encuentran en la parte inferior del auto"""
     ys = []
     for cnt in candidates:
         x, y, w, h = cv2.boundingRect(cnt)
         ys.append(y)
     license = candidates[np.argmax(ys)]
-    #croppeamos la patente del resto
+    #Croppeamos la patente del resto
     x, y, w, h = cv2.boundingRect(license)
     Cropped = imagen[y : y + h, x : x + w]
-    #volvemos a pasarlo a blanco y negro
+    #Volvemos a pasarlo a blanco y negro
     gray_cropped = cv2.cvtColor(Cropped, cv2.COLOR_BGR2GRAY)
     tresh_cropped = cv2.adaptiveThreshold(gray_cropped, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 7, 13)
-    #guardamos la patnete
-    plate = cv2.imwrite("patente.jpeg", Cropped)
-    #extraemos el texto de la patente
+    #Guardamos la patente
+    plate = cv2.imwrite("patent.jpeg", Cropped)
+    #Extraemos el text de la patentw
     pipeline = keras_ocr.pipeline.Pipeline()
-    images = [keras_ocr.tools.read(img) for img in ["patente.jpeg"]]
+    images = [keras_ocr.tools.read(img) for img in ["patent.jpeg"]]
     prediction_groups = pipeline.recognize(images)
-    patente = []
+    patent = []
     predicted_image = prediction_groups[0]
     for text, box in predicted_image:
-        patente.append(text)
-    joined = "".join(patente)
+        patent.append(text)
+    joined = "".join(patent)
     print(joined)
 
     return joined
 
 def main() -> None:
     #Comenzamos cargando la informacion de los archivos en listas, para su posterior manipulacion
-    datos_multas : list = leer_archivo(ARCHIVO_MULTAS)
-    audio_a_texto(datos_multas)
-    datos_direcciones:list = ubicacion(datos_multas)
-    obj_detection(datos_multas,datos_direcciones)
-    escribir_archivo(datos_direcciones, ARCHIVO_DIRECCIONES)
-    #print(datos_multas)
-    #print(datos_direcciones)
-    
+    data_fines : list = read_file(FILE_FINES)
+    audio_to_text(data_fines)
+    data_directions: list = location(data_fines)
+    obj_detection(data_fines, data_directions)
+    write_file(data_directions, FILE_DIRECTIONS)
+    #print(data_fines)
+    #print(data_directions)
     os.system('cls')
     menu()
-    action: int = int(comprobar_valor_numerico(input("¿Qué desea realizar? ")))
-    action = int(comprobar_opciones(action, 1, 6))
+    action: int = int(validate_numeric_valor(input("¿Qué desea realizar? ")))
+    action = int(validate_option_range(action, 1, 6))
     while (action != 6):
         if action == 1:
-            distancia(datos_direcciones)
+            distance(data_directions)
         elif action == 2:
-            cuadrante(datos_multas,datos_direcciones)
+            quadrant(data_fines, data_directions)
         elif action == 3:
-            list_of_stolen(datos_direcciones)
+            list_of_stolen(data_directions)
         elif action == 4:
-            patente_mapa(datos_direcciones,datos_multas)
+            patent_map(data_directions, data_fines)
         elif action == 5:
             pass
         menu()
-        action: int = int(comprobar_valor_numerico(input("¿Qué desea realizar? ")))
-        action = int(comprobar_opciones(action, 1, 6))
-
+        action: int = int(validate_numeric_valor(input("¿Qué desea realizar? ")))
+        action = int(validate_option_range(action, 1, 6))
 main()
