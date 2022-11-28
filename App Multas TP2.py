@@ -18,18 +18,18 @@ from termcolor import colored
 #INICIO DEL CODIGO
 FILE_FINE = "csvtest.txt"
 FILE_DIRECTIONS = "csv2.txt"
-FILE_STOLEN = "stolen.txt"
+FILE_STOLEN = "robados.txt"
 
 def menu() -> None:
-    operation: tuple = ("Denuncias cerca de estadios", "Denuncias en quadrant", "Localizar autos stolen", 
-                         "Ubicacion infraccion por patent", "Grafico mensual de denuncias", "Salir")
+    operation: tuple = ("Denuncias cerca de estadios", "Denuncias en el cuadrante", "Localizar autos robados", 
+                         "Ubicacion infraccion por patente", "Grafico mensual de denuncias", "Salir")
     for i in range(len(operation)):
         print(f"{i + 1} - {operation[i]}")
 
 #Manipulacion de archivos
 def read_file(name_file: str) -> list:
-    """Pre: Recibe una ruta de archivo y una lista de datos vacia
-    Post: Rellena la lista vacia con los datos del archivo"""
+    """ Pre: Recibe una ruta de archivo y una lista de datos vacia.
+        Post: Rellena la lista vacia con los datos del archivo."""
     data_file: list = []
     try:    
         with open(name_file, "r", newline = "", encoding = "UTF-8") as file:
@@ -37,25 +37,25 @@ def read_file(name_file: str) -> list:
             for line in csv_reader:
                 data_file.append(line)
     except IOError:
-        print("Hubo un problema operando con el file")
+        print("Hubo un problema operando con el archivos")
     return data_file
 
 def write_file(data_file: list, name_file: str) -> None:
-    """Pre: Recibe una ruta de un archivo y una lista con datos
-    Post: Reescribe el archivo con los datos de la lista"""
+    """ Pre: Recibe una ruta de un archivo y una lista con datos.
+        Post: Reescribe el archivo con los datos de la lista."""
     try:
         with open(name_file, "w", newline = "", encoding = "UTF-8") as file:
             csv_writer = csv.writer(file, delimiter = ",")
             for line in data_file:
                 csv_writer.writerow(line)
     except IOError:
-        print("Hubo un problema operando con el file")
+        print("Hubo un problema operando con el archivo")
 
 
 #Geopy
 def geolocalizator(coordinate):
-    """Pre: Recibe una coordenada
-    Post:convierte latitud y longitud a una dirreccion"""
+    """ Pre: Recibe una coordenada.
+        Post: Convierte latitud y longitud a una direccion."""
     geolocator = Nominatim(user_agent = "multas")
     coordinate_location = geolocator.reverse(coordinate)
     x = str(coordinate_location).split(",")
@@ -82,8 +82,8 @@ def location(info_cvs)->list:
     return data_list
 
 def geolocalizator_I(location):
-    """Pre: Recibe una ubicacion de una fines
-    Post:Convierte una ubicacion a coordenadas"""
+    """ Pre: Recibe una ubicacion de una multa.
+        Post: Convierte una ubicacion a coordenadas."""
     geolocator = Nominatim(user_agent = "multas")
     coordinates = geolocator.geocode(location)
     x = (coordinates.latitude, coordinates.longitude)
@@ -91,8 +91,8 @@ def geolocalizator_I(location):
 
 #action == 1
 def distance(data_file: list) -> None:
-    """Pre: Recibe una lista con datos de multas
-    Post: Lista las denuncias relaizadas en un radio de 1km al rededor del estadio de boca y river"""
+    """ Pre: Recibe una lista con datos de multas.
+        Post: Lista las denuncias realizadas en un radio de 1 km alrededor del estadio de Boca y River."""
     fines_Boca: list = []
     fines_River: list = []
     Boca_stadium = (-34.63606363146764, -58.36482460201631)
@@ -107,80 +107,70 @@ def distance(data_file: list) -> None:
             fines_Boca.append(data)
         elif GD(River_stadium, dot).km <= 1:
             fines_River.append(data)
-    
-    print("Denuncias cerca de los estadios de boca y river: \n")
-    print("Denuncias a 1km del estadio de Boca:")
+
+    print("Denuncias cerca de los estadios de Boca y River:\n")
+    print("Denuncias a 1 km del Estadio de Boca:")
     if len(fines_Boca) == 0:
-        print("No hay denuncias cerca de la cancha de Boca\n")
+        print("No hay denuncias cerca del Estadio de Boca\n")
     else:    
         for fines in fines_Boca:
-                print(f"Timestamp: {fines[0]},Teléfono: {fines[1]}, Dirección de la infracción: {fines[2]}, Localidad: {fines[3]}, Provincia: {fines[4]}, patent: {fines[5]}, {fines[6]}, {fines[7]}\n")
-
-    print("Denuncias a 1km del estadio de River:")
+                print(f"Timestamp: {fines[0]}, Teléfono: {fines[1]}, Dirección de la infracción: {fines[2]}, Localidad: {fines[3]}, Provincia: {fines[4]}, Patente: {fines[5]}, {fines[6]}, {fines[7]}\n")
+    print("Denuncias a 1 km del Estadio de River:")
     if len(fines_River) == 0:
-        print("No hay denuncias cerca de la cancha de River\n")
+        print("No hay denuncias cerca del Estadio de River\n")
     else:    
         for fines in fines_River:
-                print(f"Timestamp: {fines[0]},Teléfono: {fines[1]}, Dirección de la infracción: {fines[2]}, Localidad: {fines[3]}, Provincia: {fines[4]}, patent: {fines[5]}, {fines[6]}, {fines[7]}\n")
+                print(f"Timestamp: {fines[0]}, Teléfono: {fines[1]}, Dirección de la infracción: {fines[2]}, Localidad: {fines[3]}, Provincia: {fines[4]}, Patente: {fines[5]}, {fines[6]}, {fines[7]}\n")
 
 #action == 2
 def quadrant(data_fines: list, data_directions: list) -> None:
-    """Pre: Recibe una lista cargada con multas
-    Post: Imprime por pantalla las multas en el quadrant dado por las avenidas"""
-    
-    #El quadrant formado por las avenidas forma una especie de cuadrado,
-    #entonces puedo tomar los datos de las long y latitudes max y min.
+    """Pre: Recibe una lista cargada con multas.
+    Post: Imprime por pantalla las multas en el cuadrante dado por las avenidas."""
+    #El cuadrante formado por las avenidas forma una especie de cuadrado,
+    #entonces puedo tomar los datos de las longitud y latitudes max y min.
     length_max: float = -58.3711
     length_min: float = -58.39203
     latitude_max: float = -34.59841
     latitude_min: float = -34.60916
     list_fines_quadrant: list = []
-
     for i in range(len(data_fines)):   
         coordinate: list = []
         coordinate.append(float(data_fines[i][2]))
         coordinate.append(float(data_fines[i][3]))
-
         if ((coordinate[0] > latitude_min) and (coordinate[0] < latitude_max)) and ((coordinate[1] > length_min)
              and (coordinate[1] < length_max)):
             list_fines_quadrant.append(data_directions[i])
-
     if len(list_fines_quadrant) == 0:
-        print("No hay multas cargadas en el quadrant\n")
+        print("No hay multas cargadas en el cuadrante\n")
     else:
-        print("Multas en el quadrant de las Avenidas:\n")
+        print("Multas en el cuadrante de las Avenidas:\n")
         for fines in list_fines_quadrant:
-            print(f"Timestamp: {fines[0]},Teléfono: {fines[1]}, Dirección de la infracción: {fines[2]}, Localidad: {fines[3]}, Provincia: {fines[4]}, patent{fines[5]}, {fines[6]}, {fines[7]}\n")
+            print(f"Timestamp: {fines[0]}, Teléfono: {fines[1]}, Dirección de la infracción: {fines[2]}, Localidad: {fines[3]}, Provincia: {fines[4]}, Patente: {fines[5]}, {fines[6]}, {fines[7]}\n")
 
 def map(coordinates):
-    """Pre: recibe una coordinate
-    Post: devuelve un map web con el marcador
-    """
+    """ Pre: Recibe una coordenada.
+        Post: Devuelve un mapa web con el marcador."""
     coordinates_aux = list(coordinates)
-    #inicializamos el map con una cordeenada xy cualesquiera
+    #Inicializamos el mapa con una coordenada xy cualesquiera
     gmap = gmplot.GoogleMapPlotter(-34.611377315283946, -58.3741883957914,13)
-
     #Agregamos la coordinate
     gmap.marker(coordinates_aux[0], coordinates_aux[1], 'cornflowerblue')
-
-    # Pasamos el map a un file html
+    #Pasamos el mapa a un archivo html
     gmap.draw("my_map.html")
-
-    #abrimos el map en google
+    #Abrimos el mapa en google
     webbrowser.open("my_map.html")
 
 def patent_photo(photo_route):
-    #pre: recibe una ruta de imagen
-    #la imprime por pantalla
+    """ Pre: Recibe una ruta de imagen. 
+        Post: La imprime por pantalla."""
     cv2.imshow("Image", photo_route)
     cv2.waitKey(0)
 
 #action == 4
 def patent_map(data_directions, data_fines):
-    """Pre: Recibe una lista con datos de fines
-    Post: Devuelve la foto asociada a esa patent y un map de google indicando donde fue relaizada la denuncia
-    """
-    patent_x = input("ingrese la patent a localizar: ")
+    """ Pre: Recibe una lista con datos de multas.
+        Post: Devuelve la foto asociada a esa patente y un mapa de google indicando donde fue realizada la denuncia."""
+    patent_x = input("Ingrese la patente a localizar: ")
     for data in data_directions:
             if patent_x == data[5]:
                 location: list = []
@@ -198,9 +188,8 @@ def patent_map(data_directions, data_fines):
 
 #action == 3
 def list_of_stolen(data_directions):
-    """pre: recibe una lista de infracciones
-        post: devuelve una alerta,timestamp y ubiccacion si una patent de los stolen coincide con uno en infracion"""
-
+    """ Pre: Recibe una lista de infracciones
+        Post: Devuelve una alerta con tiempo y ubicación si una patente de los robados coincide con uno en infración"""
     message: str = "ALERTA! AUTOS CON INFRACCIONES QUE COINCIDEN CON AUTOS EN PEDIDO DE CAPTURA"
     match: list = []
     stolen: list = read_file(FILE_STOLEN)
@@ -223,8 +212,8 @@ def list_of_stolen(data_directions):
 
 #Speech recognition
 def transcrip_audio(audio_route: str) -> str:
-    """Pre: Recibe una ruta de un audio
-    Post: Printea en pantalla la trasncripcion del audio"""
+    """ Pre: Recibe una ruta de un audio.
+        Post: Printea en pantalla la trasncripcion del audio."""
     text: str = "-"
     open_audio = sr.AudioFile(audio_route)
     try:
@@ -233,9 +222,9 @@ def transcrip_audio(audio_route: str) -> str:
             audio = r.record(source)
         text = r.recognize_google(audio, language = "es-AR")
     except IOError:
-        print("Hubo un problema al operar con el file de audio")
+        print("Hubo un problema al operar con el archivo de audio.")
     except Exception as e:
-        print("Exception: " + str(e))
+        print("Excepsión: " + str(e))
     return text
 
 def audio_to_text(data_fines) -> None:
@@ -248,19 +237,18 @@ def audio_to_text(data_fines) -> None:
 
 ## YOLO Obj Detection
 def load_yolo():
-    #importamos los weight de yolo , los cfg y los coc.names
+    #Importamos los weight de yolo , los cfg y los coc.names
 	net = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
 	classes = []
 	with open("coco.names", "r") as f:
 		classes = [line.strip() for line in f.readlines()] 
-	
 	output_layers = [layer_name for layer_name in net.getUnconnectedOutLayersNames()]
 	colors = np.random.uniform(0, 255, size = (len(classes), 3))
 	return net, classes, colors, output_layers
 	
 def load_image(img_route):
-	#pre: toma la ruta de una imagen
-    #post: devuelve la imagen reconocida y le aplica un resize
+	""" Pre: Toma la ruta de una imagen.
+        Post: Devuelve la imagen reconocida y le aplica un resize(cambio de tamaño)."""
 	img = cv2.imread(img_route)
 	img = cv2.resize(img, None, fx=0.4, fy=0.4)
 	height, width, channels = img.shape
@@ -306,43 +294,43 @@ def draw_labels(boxes, confs, colors, class_ids, classes, img):
 	return label
    
 def image_detect(img_route):
-    #POST:devuelve el obj encontrado en la foto 
-	model, classes, colors, output_layers = load_yolo()
-	image, height, width, channels = load_image(img_route)
-	blob, outputs = detect_objects(image, model, output_layers)
-	boxes, confs, class_ids = get_box_dimensions(outputs, height, width)
-	draw_labels(boxes, confs, colors, class_ids, classes, image)
-	obj = draw_labels(boxes, confs, colors, class_ids, classes, image)
-	return obj
+    """Post: Devuelve el objeto encontrado en la foto."""
+    model, classes, colors, output_layers = load_yolo()
+    image, height, width, channels = load_image(img_route)
+    blob, outputs = detect_objects(image, model, output_layers)
+    boxes, confs, class_ids = get_box_dimensions(outputs, height, width)
+    draw_labels(boxes, confs, colors, class_ids, classes, image)
+    obj = draw_labels(boxes, confs, colors, class_ids, classes, image)
+    return obj
 
 def obj_detection(data_fines, data_directions):
-    #pre:recibe una lista de infracciones
-    #Post: llama a la funcion patent_to_text si se detecta un auto en la foto
+    """ Pre: Recibe una lista de infracciones.
+        Post: Llama a la funcion patent_to_text si se detecta un auto en la foto."""
     for fines in data_directions:
         img_route: str = fines[5]
         imagen = cv2.imread(img_route)
         obj: str = image_detect(img_route)
         print("Opening " + img_route + " .... ")
         if obj == "car":
-            print("Se ha detectado un auto en la foto. Extrayendo patent...")
+            print("Se ha detectado un auto en la foto. Extrayendo patente...")
             fines[5] = patent_to_text(imagen, data_fines)
         else:
-            print("No se ha detectado un auto en la foto")
+            print("No se ha detectado un auto en la foto.")
 
 
 ## Keras&Opencv extraccion de patent
 def patent_to_text(imagen, data_fines): 
-    gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY) #convertimos la imagen a blanco y negro
-    tresh = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY_INV)[1] #pasamos la foto a blanco y negros puros(imagen binaria)
-    #buscamos contornos de la imagen(formas)
+    gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY) #Convertimos la imagen a blanco y negro
+    tresh = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY_INV)[1] #Pasamos la foto a blanco y negros puros(imagen binaria)
+    #Buscamos contornos de la imagen(formas)
     contours = cv2.findContours(tresh, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[0]                              
-    #aspect ratio de las patentes argentinas 400/130 = 3.07692307692
+    #Aspect ratio de las patentes argentinas 400/130 = 3.07692307692
     license_ratio = 3.07692307692
     min_w = 80
     max_w = 110
     min_h = 25
     max_h = 52
-    #iteramos sobre los contronos y nos quedamos con los que tengan una relacion de aspecto parecida
+    #Iteramos sobre los contronos y nos quedamos con los que tengan una relacion de aspecto parecida
     candidates = []
     for cnt in contours:
         x, y, w, h = cv2.boundingRect(cnt)
@@ -350,22 +338,22 @@ def patent_to_text(imagen, data_fines):
         if (np.isclose(aspect_ratio, license_ratio, atol = 0.7) and
             (max_w > w > min_w) and (max_h > h > min_h)):
             candidates.append(cnt)
-    #para estar seguro de que nos quedamos con la patent, nos quedamos con la forma que este mas abajo de la imagen, ay que las patentes
-    #se encuentran en la parte inferior del auto
+    """Para estar seguro de que nos quedamos con la patente, nos quedamos con la forma que 
+    este más abajo de la imagen, hay que las patentes se encuentran en la parte inferior del auto"""
     ys = []
     for cnt in candidates:
         x, y, w, h = cv2.boundingRect(cnt)
         ys.append(y)
     license = candidates[np.argmax(ys)]
-    #croppeamos la patent del resto
+    #Croppeamos la patente del resto
     x, y, w, h = cv2.boundingRect(license)
     Cropped = imagen[y : y + h, x : x + w]
-    #volvemos a pasarlo a blanco y negro
+    #Volvemos a pasarlo a blanco y negro
     gray_cropped = cv2.cvtColor(Cropped, cv2.COLOR_BGR2GRAY)
     tresh_cropped = cv2.adaptiveThreshold(gray_cropped, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 7, 13)
-    #guardamos la patnete
+    #Guardamos la patente
     plate = cv2.imwrite("patent.jpeg", Cropped)
-    #extraemos el text de la patent
+    #Extraemos el text de la patentw
     pipeline = keras_ocr.pipeline.Pipeline()
     images = [keras_ocr.tools.read(img) for img in ["patent.jpeg"]]
     prediction_groups = pipeline.recognize(images)
@@ -401,7 +389,6 @@ def main() -> None:
             patent_map(data_directions, data_fines)
         elif action == 5:
             pass
-
         menu()
         action = int(input(("¿Qué desea realizar?")))
 
