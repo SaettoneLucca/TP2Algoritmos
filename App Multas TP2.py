@@ -24,7 +24,7 @@ def comprobar_valor_numerico(valor_a_comprobar: str) -> int:
     """ Pre: Comprueba que el número ingresado por el usuario sea un valor númerico
         Post: Una vez que el usuario ingresa un número, lo transforma a numero entero y lo devuelve."""
     while not valor_a_comprobar.isnumeric():
-        valor_a_comprobar = input("Error no ingresó un numero. Ingrese el número correspondiente : ")
+        valor_a_comprobar = input("Error no ingresó un numero. Ingrese un número correspondiente : ")
     return int(valor_a_comprobar)
 
 def comprobar_opciones(comprobar_menu: int, rango_inicio: int, rango_final: int) -> int:
