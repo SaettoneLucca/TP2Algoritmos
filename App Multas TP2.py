@@ -70,7 +70,7 @@ def leer_archivo(nombre_archivo: str) -> list:
             for linea in csv_reader:
                 datos_archivo.append(linea)
     except IOError:
-        print("Hubo un problema operando con el archivo")
+        print("ERROR read_file: Hubo un problema operando con el archivo")
     return datos_archivo
 
 def escribir_archivo(datos_archivo: list, nombre_archivo: str) -> None:
@@ -82,9 +82,7 @@ def escribir_archivo(datos_archivo: list, nombre_archivo: str) -> None:
             for line in datos_archivo:
                 csv_writer.writerow(line)
     except IOError:
-        print("Hubo un problema operando con el archivo")
-
-
+        print("ERROR write_file: Hubo un problema operando con el archivo")
 
 #Geopy
 def geolocalizador(coordenada):
