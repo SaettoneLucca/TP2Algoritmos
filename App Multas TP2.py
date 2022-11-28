@@ -20,6 +20,20 @@ ARCHIVO_MULTAS = "csvtest.txt"
 ARCHIVO_DIRECCIONES = "csv2.txt"
 ARCHIVO_ROBADOS = "robados.txt"
 
+def comprobar_valor_numerico(valor_a_comprobar: str) -> int:
+    """ Pre: Comprueba que el número ingresado por el usuario sea un valor númerico
+        Post: Una vez que el usuario ingresa un número, lo transforma a numero entero y lo devuelve."""
+    while not valor_a_comprobar.isnumeric():
+        valor_a_comprobar = input("Error no ingresó un numero. Ingrese un número correspondiente : ")
+    return int(valor_a_comprobar)
+
+def comprobar_opciones(comprobar_menu: int, rango_inicio: int, rango_final: int) -> int:
+    """ Pre: Comprueba que el número ingresado por el usuario se encuentro entre un cierto rango
+        Post: Una vez que el usuario ingresa un número en este rango, lo transforma a numero entero y lo devuelve."""
+    while ( comprobar_menu < rango_inicio or comprobar_menu > rango_final):
+        comprobar_menu = int(comprobar_valor_numerico(input(f"Error. No eligió ninguna de las opciones. Eliga una de las opciones de {rango_inicio} a {rango_final}: ")))
+    return comprobar_menu
+
 def menu() -> None:
     operation: tuple = ("Denuncias cerca de estadios", "Denuncias en cuadrante", "Localizar autos robados", 
                          "Ubicacion infraccion por patente", "Grafico mensual de denuncias", "Salir")
@@ -391,20 +405,21 @@ def main() -> None:
     #print(datos_direcciones)
 
     menu()
-    accion: int = int(input(("Que desea realizar? ")))
-    while (accion != 6):
-        if accion == 1:
+    action: int = int(comprobar_valor_numerico(input("¿Qué desea realizar?")))
+    action = int(comprobar_opciones(action, 1, 6))
+    while (action != 6):
+        if action == 1:
             distancia(datos_direcciones)
-        elif accion == 2:
+        elif action == 2:
             cuadrante(datos_multas,datos_direcciones)
-        elif accion == 3:
+        elif action == 3:
             list_of_stolen(datos_direcciones)
-        elif accion == 4:
+        elif action == 4:
             patente_mapa(datos_direcciones,datos_multas)
-        elif accion == 5:
+        elif action == 5:
             pass
-
         menu()
-        accion = int(input(("Que desea realizar? ")))
+        action: int = int(comprobar_valor_numerico(input("¿Qué desea realizar?")))
+        action = int(comprobar_opciones(action, 1, 6))
 
 main()
