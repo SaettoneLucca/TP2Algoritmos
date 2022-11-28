@@ -21,29 +21,6 @@ FILE_FINES = "csvtest.txt"
 FILE_DIRECTIONS = "csv2.txt"
 FILE_STOLEN = "robados.txt"
 
-def validate_patent_parts(validate_value: str) -> bool:
-    """ Pre: Recibe una patente. Parte la patente en partes.
-        Post: Valida que esté bien escrita y devuelve Verdadero o Falso."""
-    valid: bool = False
-    part1: bool = False
-    part2: bool = False
-    part3: bool = False
-    part1 = (validate_value[:2:1]).isalpha()
-    part2 = (validate_value[2:5:1]).isnumeric()
-    part3 = (validate_value[5::1]).isalpha()
-    if part1 == False or part2 == False or part3 == False:
-        valid = False
-    else:
-        valid = True
-    return valid
-
-def validate_patent(validate_value: str) -> str:
-    """ Pre: Recibe una patente cualquiera.
-        Post: Devuelve una patente que esté bien escrita."""
-    while not validate_patent_parts(validate_value):
-        validate_value: str = input("Ingrese la patente a localizar: ")
-    return validate_value
-
 def validate_numeric_valor(validate_value: str) -> int:
     """ Pre: Comprueba que el número ingresado por el usuario sea un valor númerico
         Post: Una vez que el usuario ingresa un número, lo transforma a numero entero y lo devuelve."""
@@ -68,29 +45,17 @@ def validate_patent_parts(validate_value: str) -> bool:
     part3 = (validate_value[5::1]).isalpha()
     if part1 == False or part2 == False or part3 == False:
         valid = False
-        print("ERROR. La pantente no es valida o está mal escrita.")
+        print("ERROR. La pantente no es válida o está mal escrita.")
     else:
         valid = True
     return valid
 
 def validate_patent(validate_value: str) -> str:
+    """ Pre: Recibe una patente cualquiera.
+        Post: Devuelve una patente que esté bien escrita."""
     while not validate_patent_parts(validate_value):
         validate_value: str = input("Ingrese la patente a localizar: ")
     return validate_value
-
-def comprobar_valor_numerico(valor_a_comprobar: str) -> int:
-    """ Pre: Comprueba que el número ingresado por el usuario sea un valor númerico
-        Post: Una vez que el usuario ingresa un número, lo transforma a numero entero y lo devuelve."""
-    while not valor_a_comprobar.isnumeric():
-        valor_a_comprobar = input("Error no ingresó un numero. Ingrese un número correspondiente : ")
-    return int(valor_a_comprobar)
-
-def comprobar_opciones(comprobar_menu: int, rango_inicio: int, rango_final: int) -> int:
-    """ Pre: Comprueba que el número ingresado por el usuario se encuentro entre un cierto rango
-        Post: Una vez que el usuario ingresa un número en este rango, lo transforma a numero entero y lo devuelve."""
-    while ( comprobar_menu < rango_inicio or comprobar_menu > rango_final):
-        comprobar_menu = int(comprobar_valor_numerico(input(f"Error. No eligió ninguna de las opciones. Eliga una de las opciones de {rango_inicio} a {rango_final}: ")))
-    return comprobar_menu
 
 def menu() -> None:
     print("Menu:")
@@ -276,7 +241,7 @@ def list_of_stolen(data_directions):
                     aux.append(data[4])
                     aux.append(data[5])
                     match.append(aux)
-    if match != None:
+    if len(match) != 0:
         print(colored(message, 'red'))
         for i in range(len(match)):
                 print(colored(match[i], 'blue'))
