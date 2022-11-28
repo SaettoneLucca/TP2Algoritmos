@@ -20,19 +20,19 @@ FILE_FINE = "csvtest.txt"
 FILE_DIRECTIONS = "csv2.txt"
 FILE_STOLEN = "robados.txt"
 
-def comprobar_valor_numerico(valor_a_comprobar: str) -> int:
+def validate_numeric_valor(validate_value: str) -> int:
     """ Pre: Comprueba que el número ingresado por el usuario sea un valor númerico
         Post: Una vez que el usuario ingresa un número, lo transforma a numero entero y lo devuelve."""
-    while not valor_a_comprobar.isnumeric():
-        valor_a_comprobar = input("Error no ingresó un numero. Ingrese un número correspondiente : ")
-    return int(valor_a_comprobar)
+    while not validate_value.isnumeric():
+        validate_value = input("Error no ingresó un numero. Ingrese un número correspondiente : ")
+    return int(validate_value)
 
-def comprobar_opciones(comprobar_menu: int, rango_inicio: int, rango_final: int) -> int:
+def validate_option_range(validate_value: int, start_value: int, final_value: int) -> int:
     """ Pre: Comprueba que el número ingresado por el usuario se encuentro entre un cierto rango
         Post: Una vez que el usuario ingresa un número en este rango, lo transforma a numero entero y lo devuelve."""
-    while ( comprobar_menu < rango_inicio or comprobar_menu > rango_final):
-        comprobar_menu = int(comprobar_valor_numerico(input(f"Error. No eligió ninguna de las opciones. Eliga una de las opciones de {rango_inicio} a {rango_final}: ")))
-    return comprobar_menu
+    while ( validate_value < start_value or validate_value > final_value):
+        validate_value = int(validate_numeric_valor(input(f"Error. No eligió ninguna de las opciones. Eliga una de las opciones de {start_value} a {final_value}: ")))
+    return validate_value
 
 def menu() -> None:
     operation: tuple = ("Denuncias cerca de estadios", "Denuncias en el cuadrante", "Localizar autos robados", 
@@ -391,8 +391,8 @@ def main() -> None:
     #print(data_directions)
 
     menu()
-    action: int = int(comprobar_valor_numerico(input("¿Qué desea realizar?")))
-    action = int(comprobar_opciones(action, 1, 6))
+    action: int = int(validate_numeric_valor(input("¿Qué desea realizar?")))
+    action = int(validate_option_range(action, 1, 6))
     while (action != 6):
         if action == 1:
             distance(data_directions)
@@ -405,6 +405,6 @@ def main() -> None:
         elif action == 5:
             pass
         menu()
-        action: int = int(comprobar_valor_numerico(input("¿Qué desea realizar?")))
-        action = int(comprobar_opciones(action, 1, 6))
+        action: int = int(validate_numeric_valor(input("¿Qué desea realizar?")))
+        action = int(validate_option_range(action, 1, 6))
 main()
