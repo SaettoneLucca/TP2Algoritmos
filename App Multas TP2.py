@@ -1,4 +1,4 @@
-#import de librerias
+#Import de librerias
 from geopy.distance import geodesic as GD
 from geopy.geocoders import Nominatim
 from gmplot import gmplot
@@ -15,12 +15,14 @@ import speech_recognition as sr
 r = sr.Recognizer()
 from termcolor import colored
 
-#INICIO DEL CODIGO
+#Inicio de codigo
 FILE_FINES = "csvtest.txt"
 FILE_DIRECTIONS = "csv2.txt"
 FILE_STOLEN = "robados.txt"
 
 def validate_patent_parts(validate_value: str) -> bool:
+    """ Pre: Recibe una patente. Parte la patente en partes.
+        Post: Valida que esté bien escrita y devuelve Verdadero o Falso."""
     valid: bool = False
     part1: bool = False
     part2: bool = False
@@ -35,6 +37,8 @@ def validate_patent_parts(validate_value: str) -> bool:
     return valid
 
 def validate_patent(validate_value: str) -> str:
+    """ Pre: Recibe una patente cualquiera.
+        Post: Devuelve una patente que esté bien escrita."""
     while not validate_patent_parts(validate_value):
         validate_value: str = input("Ingrese la patente a localizar: ")
     return validate_value
@@ -43,7 +47,7 @@ def validate_numeric_valor(validate_value: str) -> int:
     """ Pre: Comprueba que el número ingresado por el usuario sea un valor númerico
         Post: Una vez que el usuario ingresa un número, lo transforma a numero entero y lo devuelve."""
     while not validate_value.isnumeric():
-        validate_value = input("Error no ingresó un numero. Ingrese un número correspondiente : ")
+        validate_value: str = input("Error no ingresó un numero. Ingrese un número correspondiente : ")
     return int(validate_value)
 
 def validate_option_range(validate_value: int, start_value: int, final_value: int) -> int:
