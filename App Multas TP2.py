@@ -16,7 +16,7 @@ r = sr.Recognizer()
 from termcolor import colored
 
 #INICIO DEL CODIGO
-FILE_FINE = "csvtest.txt"
+FILE_FINES = "csvtest.txt"
 FILE_DIRECTIONS = "csv2.txt"
 FILE_STOLEN = "robados.txt"
 
@@ -30,7 +30,7 @@ def validate_numeric_valor(validate_value: str) -> int:
 def validate_option_range(validate_value: int, start_value: int, final_value: int) -> int:
     """ Pre: Comprueba que el número ingresado por el usuario se encuentro entre un cierto rango
         Post: Una vez que el usuario ingresa un número en este rango, lo transforma a numero entero y lo devuelve."""
-    while ( validate_value < start_value or validate_value > final_value):
+    while (validate_value < start_value or validate_value > final_value):
         validate_value = int(validate_numeric_valor(input(f"Error. No eligió ninguna de las opciones. Eliga una de las opciones de {start_value} a {final_value}: ")))
     return validate_value
 
@@ -382,7 +382,7 @@ def patent_to_text(imagen, data_fines):
 
 def main() -> None:
     #Comenzamos cargando la informacion de los archivos en listas, para su posterior manipulacion
-    data_fines : list = read_file(FILE_FINE)
+    data_fines : list = read_file(FILE_FINES)
     audio_to_text(data_fines)
     data_directions: list = location(data_fines)
     obj_detection(data_fines, data_directions)
