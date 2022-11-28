@@ -230,6 +230,7 @@ def transcribir_audio(ruta_audio: str) -> str:
     open_audio = sr.AudioFile(ruta_audio)
     try:
         with open_audio as source:
+            r.adjust_for_ambient_noise(source)
             audio = r.record(source)
         s = r.recognize_google(audio, language="es-AR")
         texto = s
@@ -405,5 +406,5 @@ def main() -> None:
 
         menu()
         accion = int(input(("Que desea realizar? ")))
-        
+
 main()
