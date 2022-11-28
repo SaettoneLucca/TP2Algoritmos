@@ -20,6 +20,25 @@ ARCHIVO_MULTAS = "csvtest.txt"
 ARCHIVO_DIRECCIONES = "csv2.txt"
 ARCHIVO_ROBADOS = "robados.txt"
 
+def validate_patent_parts(validate_value: str) -> bool:
+    valid: bool = False
+    part1: bool = False
+    part2: bool = False
+    part3: bool = False
+    part1 = (validate_value[:2:1]).isalpha()
+    part2 = (validate_value[2:5:1]).isnumeric()
+    part3 = (validate_value[5::1]).isalpha()
+    if part1 == False or part2 == False or part3 == False:
+        valid = False
+    else:
+        valid = True
+    return valid
+
+def validate_patent(validate_value: str) -> str:
+    while not validate_patent_parts(validate_value):
+        validate_value: str = input("Ingrese la patente a localizar: ")
+    return validate_value
+
 def comprobar_valor_numerico(valor_a_comprobar: str) -> int:
     """ Pre: Comprueba que el número ingresado por el usuario sea un valor númerico
         Post: Una vez que el usuario ingresa un número, lo transforma a numero entero y lo devuelve."""
@@ -195,7 +214,7 @@ def patente_mapa(datos_direcciones, datos_multas):
     """Pre: Recibe una lista con datos de multa
     Post: Devuelve la foto asociada a esa patente y un mapa de google indicando donde fue relaizada la denuncia
     """
-    patente_x = input("ingrese la patente a localizar: ")
+    patente_x: str = validate_patent(input("Ingrese la patente a localizar: "))
     for dato in datos_direcciones:
             if patente_x == dato[5]:
                 ubicacion: list = []
