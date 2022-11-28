@@ -248,7 +248,8 @@ def list_of_stolen(data_directions):
         print(colored(message, 'red'))
         for i in range(len(match)):
                 print(colored(match[i], 'blue'))
-
+    else:
+        print("Ninguna patente del archivo robados.txt coincide con las patentes de la lista de multas.")
 
 #Speech recognition
 def transcrip_audio(audio_route: str) -> str:
@@ -273,7 +274,6 @@ def audio_to_text(data_fines) -> None:
         audio_route: str = fines[6]
         transcripcion: str = transcrip_audio(audio_route)
         fines[6] = transcripcion
-
 
 ## YOLO Obj Detection
 def load_yolo():
@@ -357,7 +357,6 @@ def obj_detection(data_fines, data_directions):
         else:
             print("No se ha detectado un auto en la foto.")
 
-
 ## Keras&Opencv extraccion de patent
 def patent_to_text(imagen, data_fines): 
     gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY) #Convertimos la imagen a blanco y negro
@@ -403,7 +402,6 @@ def patent_to_text(imagen, data_fines):
         patent.append(text)
     joined = "".join(patent)
     print(joined)
-
     return joined
 
 def main() -> None:
