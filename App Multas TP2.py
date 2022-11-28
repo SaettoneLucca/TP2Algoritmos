@@ -58,7 +58,7 @@ def validate_patent(validate_value: str) -> str:
     return validate_value
 
 def menu() -> None:
-    print("Menu:")
+    print("\nMenu:")
     operation: tuple = ("Denuncias cerca de estadios", "Denuncias en cuadrante", "Localizar autos robados", 
                          "Ubicacion infraccion por patente", "Grafico mensual de denuncias", "Salir")
     for i in range(len(operation)):
@@ -207,21 +207,24 @@ def patent_photo(photo_route):
 def patent_map(data_directions, data_fines):
     """ Pre: Recibe una lista con datos de multas.
         Post: Devuelve la foto asociada a esa patente y un mapa de google indicando donde fue realizada la denuncia."""
+    flag: bool = False
     patent_x: str = validate_patent(input("Ingrese la patente a localizar: "))
     for data in data_directions:
-            if patent_x == data[5]:
-                location: list = []
-                location.append(data[2])
-                location.append(data[3])
-                location.append(data[4])
-                coordinates = geolocalizator_I(location)
-                map = map(coordinates)
-                for i in data_fines:
-                    aux: tuple = (i[2],i[3])
-                    if GD(coordinates, aux).km <= 0.01:
-                        photo_route = cv2.imread(i[4])
-                        foto = patent_photo(photo_route)
-
+        if patent_x == data[5]:
+            flag = True
+            location: list = []
+            location.append(data[2])
+            location.append(data[3])
+            location.append(data[4])
+            coordinates = geolocalizator_I(location)
+            map_aux = map(coordinates)
+            for i in data_fines:
+                aux: tuple = (i[2],i[3])
+                if GD(coordinates, aux).km <= 0.01:
+                    photo_route = cv2.imread(i[4])
+                    foto = patent_photo(photo_route)
+    if flag == False:
+        print(f"No se encontro la patente {patent_x} en la lista de multas.")
 
 #action == 3
 def list_of_stolen(data_directions):
@@ -347,7 +350,7 @@ def obj_detection(data_fines, data_directions):
         img_route: str = fines[5]
         imagen = cv2.imread(img_route)
         obj: str = image_detect(img_route)
-        print("Opening " + img_route + " .... ")
+        print("\nOpening " + img_route + " .... ")
         if obj == "car":
             print("Se ha detectado un auto en la foto. Extrayendo patente...")
             fines[5] = patent_to_text(imagen, data_fines)
