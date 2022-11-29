@@ -404,6 +404,20 @@ def patent_to_text(imagen, data_fines):
     print(joined)
     return joined
 
+#action==5
+def graph(info_fines) -> None:
+    month = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+    values = []
+    for k in range(0, len(month)):
+        acum_fines: int = 0
+        for i in range(0, len(info_fines)):
+            if (k + 1) == int(info_fines[i][0][5:7:1]):
+                acum_fines = acum_fines + 1
+        values.append(acum_fines)
+    plt.bar(month, values)
+    plt.suptitle('Cant. multas por mes')
+    plt.show()
+
 def main() -> None:
     #Comenzamos cargando la informacion de los archivos en listas, para su posterior manipulacion
     data_fines : list = read_file(FILE_FINES)
@@ -427,7 +441,7 @@ def main() -> None:
         elif action == 4:
             patent_map(data_directions, data_fines)
         elif action == 5:
-            pass
+            graph(data_fines)
         menu()
         action: int = int(validate_numeric_valor(input("¿Qué desea realizar? ")))
         action = int(validate_option_range(action, 1, 6))
