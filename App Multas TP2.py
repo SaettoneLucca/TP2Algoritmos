@@ -95,7 +95,7 @@ def write_file(data_file: list, name_file: str) -> None:
 def geolocalizator(coordinate):
     """ Pre: Recibe una coordenada.
         Post: Convierte latitud y longitud a una direccion."""
-    geolocator = Nominatim(user_agent = "multas")
+    geolocator = Nominatim(user_agent = "appmultas")
     coordinate_location = geolocator.reverse(coordinate)
     x = str(coordinate_location).split(",")
     y = x[0:4]
