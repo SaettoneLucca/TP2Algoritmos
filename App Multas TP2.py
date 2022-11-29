@@ -36,6 +36,8 @@ def validate_option_range(validate_value: int, start_value: int, final_value: in
     return validate_value
 
 def validate_patent_parts(validate_value: str) -> bool:
+    """ Pre: Recibe una patente cualquiera. La divide en partes.
+        Post: Verifica que cada parte esté bien escrita y devuelve verdadero o falso."""
     valid: bool = False
     part1: bool = False
     part2: bool = False
@@ -404,7 +406,7 @@ def patent_to_text(imagen, data_fines):
     print(joined)
     return joined
 
-#action==5
+#action == 5
 def graph(info_fines) -> None:
     month = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
     values = []
@@ -425,8 +427,6 @@ def main() -> None:
     data_directions: list = location(data_fines)
     obj_detection(data_fines, data_directions)
     write_file(data_directions, FILE_DIRECTIONS)
-    #print(data_fines)
-    #print(data_directions)
     os.system('cls')
     menu()
     action: int = int(validate_numeric_valor(input("¿Qué desea realizar? ")))
