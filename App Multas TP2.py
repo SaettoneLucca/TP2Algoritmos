@@ -35,7 +35,7 @@ def validate_option_range(validate_value: int, start_value: int, final_value: in
         validate_value = int(validate_numeric_valor(input(f"Error. No eligió ninguna de las opciones. Eliga una de las opciones de {start_value} a {final_value}: ")))
     return validate_value
 
-def validate_text(text: str, message:str) -> str:
+def validate_text(text: str, message: str) -> str:
     while not text.isalnum():
         text = input(f"ERROR. Lo que escribio tiene caracteres no aceptados por el programa.\n{message}")
     return text
@@ -82,7 +82,7 @@ def geolocalizator(coordinate):
     y = x[0:4]
     return y
 
-def location(info_cvs) -> list:
+def location(info_cvs: list) -> list:
     data_list: list = []
     for data in info_cvs:
         aux: list = []
@@ -167,7 +167,7 @@ def quadrant(data_fines: list, data_directions: list) -> None:
         for fines in list_fines_quadrant:
             print(f"Timestamp: {fines[0]}, Teléfono: {fines[1]}, Dirección de la infracción: {fines[2]}, Localidad: {fines[3]}, Provincia: {fines[4]}, Patente: {fines[5]}, {fines[6]}, {fines[7]}\n")
 
-def map(coordinates):
+def map(coordinates) -> None:
     """ Pre: Recibe una coordenada.
         Post: Devuelve un mapa web con el marcador."""
     coordinates_aux = list(coordinates)
@@ -180,14 +180,14 @@ def map(coordinates):
     #Abrimos el mapa en google
     webbrowser.open("my_map.html")
 
-def plate_photo(photo_route):
+def plate_photo(photo_route) -> None:
     """ Pre: Recibe una ruta de imagen. 
         Post: La imprime por pantalla."""
     cv2.imshow("Image", photo_route)
     cv2.waitKey(0)
 
 #action == 4
-def plate_map(data_directions, data_fines):
+def plate_map(data_directions: list, data_fines: list) -> None:
     """ Pre: Recibe una lista con datos de multas.
         Post: Devuelve la foto asociada a esa patente y un mapa de google indicando donde fue realizada la denuncia."""
     flag: bool = False
@@ -200,17 +200,17 @@ def plate_map(data_directions, data_fines):
             location.append(data[3])
             location.append(data[4])
             coordinates = geolocalizator_I(location)
-            map_aux = map(coordinates)
+            map(coordinates)
             for i in data_fines:
                 aux: tuple = (i[2],i[3])
                 if GD(coordinates, aux).km <= 0.01:
                     photo_route = cv2.imread(i[4])
-                    foto = plate_photo(photo_route)
+                    plate_photo(photo_route)
     if flag == False:
         print(f"No se encontro la patente {plate_x} en la lista de multas.")
 
 #action == 3
-def list_of_stolen(data_directions):
+def list_of_stolen(data_directions: list) -> None:
     """ Pre: Recibe una lista de infracciones
         Post: Devuelve una alerta con tiempo y ubicación si una patente de los robados coincide con uno en infración"""
     message: str = "ALERTA! AUTOS CON INFRACCIONES QUE COINCIDEN CON AUTOS EN PEDIDO DE CAPTURA"
@@ -251,7 +251,7 @@ def transcrip_audio(audio_route: str) -> str:
         print("Excepsión: " + str(e))
     return text
 
-def audio_to_text(data_fines) -> None:
+def audio_to_text(data_fines: list) -> None:
     print("Convirtiendo audios a textos . . .\n")
     for fines in data_fines:
         audio_route: str = fines[6]
@@ -269,7 +269,7 @@ def load_yolo():
 	colors = np.random.uniform(0, 255, size = (len(classes), 3))
 	return net, classes, colors, output_layers
 	
-def load_image(img_route):
+def load_image(img_route: str):
 	""" Pre: Toma la ruta de una imagen.
         Post: Devuelve la imagen reconocida y le aplica un resize(cambio de tamaño)."""
 	img = cv2.imread(img_route)
@@ -316,17 +316,16 @@ def draw_labels(boxes, confs, colors, class_ids, classes, img):
 			cv2.putText(img, label, (x, y - 5), font, 1, color, 1)	
 	return label
    
-def image_detect(img_route):
+def image_detect(img_route: str):
     """Post: Devuelve el objeto encontrado en la foto."""
     model, classes, colors, output_layers = load_yolo()
     image, height, width, channels = load_image(img_route)
     blob, outputs = detect_objects(image, model, output_layers)
     boxes, confs, class_ids = get_box_dimensions(outputs, height, width)
-    draw_labels(boxes, confs, colors, class_ids, classes, image)
     obj = draw_labels(boxes, confs, colors, class_ids, classes, image)
     return obj
 
-def obj_detection(data_fines, data_directions):
+def obj_detection(data_directions: list) -> None:
     """ Pre: Recibe una lista de infracciones.
         Post: Llama a la funcion plate_to_text si se detecta un auto en la foto."""
     for fines in data_directions:
@@ -336,12 +335,12 @@ def obj_detection(data_fines, data_directions):
         print("\nOpening " + img_route + " .... ")
         if obj == "car":
             print("Se ha detectado un auto en la foto. Extrayendo patente...")
-            fines[5] = plate_to_text(imagen, data_fines)
+            fines[5] = plate_to_text(imagen)
         else:
             print("No se ha detectado un auto en la foto.")
 
 ## Keras&Opencv extraccion de patente
-def plate_to_text(imagen, data_fines): 
+def plate_to_text(imagen): 
     gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY) #Convertimos la imagen a blanco y negro
     tresh = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY_INV)[1] #Pasamos la foto a blanco y negros puros(imagen binaria)
     #Buscamos contornos de la imagen(formas)
@@ -374,7 +373,7 @@ def plate_to_text(imagen, data_fines):
     gray_cropped = cv2.cvtColor(Cropped, cv2.COLOR_BGR2GRAY)
     tresh_cropped = cv2.adaptiveThreshold(gray_cropped, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 7, 13)
     #Guardamos la patente
-    plate = cv2.imwrite("licence_plate.jpeg", Cropped)
+    cv2.imwrite("licence_plate.jpeg", Cropped)
     #Extraemos el text de la patente
     pipeline = keras_ocr.pipeline.Pipeline()
     images = [keras_ocr.tools.read(img) for img in ["licence_plate.jpeg"]]
@@ -388,7 +387,7 @@ def plate_to_text(imagen, data_fines):
     return joined
 
 #action == 5
-def graph(info_fines) -> None:
+def graph(info_fines: list) -> None:
     month = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
     values = []
     for k in range(0, len(month)):
@@ -406,7 +405,7 @@ def main() -> None:
     data_fines : list = read_file(FILE_FINES)
     audio_to_text(data_fines)
     data_directions: list = location(data_fines)
-    obj_detection(data_fines, data_directions)
+    obj_detection(data_directions)
     write_file(data_directions, FILE_DIRECTIONS)
     os.system('cls')
     menu()
