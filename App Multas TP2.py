@@ -35,29 +35,10 @@ def validate_option_range(validate_value: int, start_value: int, final_value: in
         validate_value = int(validate_numeric_valor(input(f"Error. No eligió ninguna de las opciones. Eliga una de las opciones de {start_value} a {final_value}: ")))
     return validate_value
 
-def validate_patent_parts(validate_value: str) -> bool:
-    """ Pre: Recibe una patente cualquiera. La divide en partes.
-        Post: Verifica que cada parte esté bien escrita y devuelve verdadero o falso."""
-    valid: bool = False
-    part1: bool = False
-    part2: bool = False
-    part3: bool = False
-    part1 = (validate_value[:2:1]).isalpha()
-    part2 = (validate_value[2:5:1]).isnumeric()
-    part3 = (validate_value[5::1]).isalpha()
-    if part1 == False or part2 == False or part3 == False:
-        valid = False
-        print("ERROR. La pantente no es válida o está mal escrita.")
-    else:
-        valid = True
-    return valid
-
-def validate_patent(validate_value: str) -> str:
-    """ Pre: Recibe una patente cualquiera.
-        Post: Devuelve una patente que esté bien escrita."""
-    while not validate_patent_parts(validate_value):
-        validate_value: str = input("Ingrese la patente a localizar: ")
-    return validate_value
+def validate_text(text: str, message:str) -> str:
+    while not text.isalnum():
+        text = input(f"ERROR. Lo que escribio tiene caracteres no aceptados por el programa.\n{message}")
+    return text
 
 def menu() -> None:
     print("\nMenu:")
@@ -101,7 +82,7 @@ def geolocalizator(coordinate):
     y = x[0:4]
     return y
 
-def location(info_cvs)->list:
+def location(info_cvs) -> list:
     data_list: list = []
     for data in info_cvs:
         aux: list = []
@@ -123,7 +104,7 @@ def location(info_cvs)->list:
 def geolocalizator_I(location):
     """ Pre: Recibe una ubicacion de una multa.
         Post: Convierte una ubicacion a coordenadas."""
-    geolocator = Nominatim(user_agent = "multas")
+    geolocator = Nominatim(user_agent = "appmultas")
     coordinates = geolocator.geocode(location)
     x = (coordinates.latitude, coordinates.longitude)
     return x
@@ -199,20 +180,20 @@ def map(coordinates):
     #Abrimos el mapa en google
     webbrowser.open("my_map.html")
 
-def patent_photo(photo_route):
+def plate_photo(photo_route):
     """ Pre: Recibe una ruta de imagen. 
         Post: La imprime por pantalla."""
     cv2.imshow("Image", photo_route)
     cv2.waitKey(0)
 
 #action == 4
-def patent_map(data_directions, data_fines):
+def plate_map(data_directions, data_fines):
     """ Pre: Recibe una lista con datos de multas.
         Post: Devuelve la foto asociada a esa patente y un mapa de google indicando donde fue realizada la denuncia."""
     flag: bool = False
-    patent_x: str = validate_patent(input("Ingrese la patente a localizar: "))
+    plate_x: str = validate_text(input("Ingrese la patente a localizar: "), "Ingrese la patente a localizar: ")
     for data in data_directions:
-        if patent_x == data[5]:
+        if plate_x == data[5]:
             flag = True
             location: list = []
             location.append(data[2])
@@ -224,9 +205,9 @@ def patent_map(data_directions, data_fines):
                 aux: tuple = (i[2],i[3])
                 if GD(coordinates, aux).km <= 0.01:
                     photo_route = cv2.imread(i[4])
-                    foto = patent_photo(photo_route)
+                    foto = plate_photo(photo_route)
     if flag == False:
-        print(f"No se encontro la patente {patent_x} en la lista de multas.")
+        print(f"No se encontro la patente {plate_x} en la lista de multas.")
 
 #action == 3
 def list_of_stolen(data_directions):
@@ -236,9 +217,9 @@ def list_of_stolen(data_directions):
     match: list = []
     stolen: list = read_file(FILE_STOLEN)
     for stole in stolen:
-        for patent in stole:
+        for plate in stole:
             for data in data_directions:
-                if patent == data[5]:
+                if plate == data[5]:
                     aux: list = []
                     aux.append(data[0])
                     aux.append(data[2])
@@ -347,7 +328,7 @@ def image_detect(img_route):
 
 def obj_detection(data_fines, data_directions):
     """ Pre: Recibe una lista de infracciones.
-        Post: Llama a la funcion patent_to_text si se detecta un auto en la foto."""
+        Post: Llama a la funcion plate_to_text si se detecta un auto en la foto."""
     for fines in data_directions:
         img_route: str = fines[5]
         imagen = cv2.imread(img_route)
@@ -355,12 +336,12 @@ def obj_detection(data_fines, data_directions):
         print("\nOpening " + img_route + " .... ")
         if obj == "car":
             print("Se ha detectado un auto en la foto. Extrayendo patente...")
-            fines[5] = patent_to_text(imagen, data_fines)
+            fines[5] = plate_to_text(imagen, data_fines)
         else:
             print("No se ha detectado un auto en la foto.")
 
-## Keras&Opencv extraccion de patent
-def patent_to_text(imagen, data_fines): 
+## Keras&Opencv extraccion de patente
+def plate_to_text(imagen, data_fines): 
     gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY) #Convertimos la imagen a blanco y negro
     tresh = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY_INV)[1] #Pasamos la foto a blanco y negros puros(imagen binaria)
     #Buscamos contornos de la imagen(formas)
@@ -393,16 +374,16 @@ def patent_to_text(imagen, data_fines):
     gray_cropped = cv2.cvtColor(Cropped, cv2.COLOR_BGR2GRAY)
     tresh_cropped = cv2.adaptiveThreshold(gray_cropped, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 7, 13)
     #Guardamos la patente
-    plate = cv2.imwrite("patent.jpeg", Cropped)
-    #Extraemos el text de la patentw
+    plate = cv2.imwrite("licence_plate.jpeg", Cropped)
+    #Extraemos el text de la patente
     pipeline = keras_ocr.pipeline.Pipeline()
-    images = [keras_ocr.tools.read(img) for img in ["patent.jpeg"]]
+    images = [keras_ocr.tools.read(img) for img in ["licence_plate.jpeg"]]
     prediction_groups = pipeline.recognize(images)
-    patent = []
+    plate = []
     predicted_image = prediction_groups[0]
     for text, box in predicted_image:
-        patent.append(text)
-    joined = "".join(patent)
+        plate.append(text)
+    joined = "".join(plate)
     print(joined)
     return joined
 
@@ -439,7 +420,7 @@ def main() -> None:
         elif action == 3:
             list_of_stolen(data_directions)
         elif action == 4:
-            patent_map(data_directions, data_fines)
+            plate_map(data_directions, data_fines)
         elif action == 5:
             graph(data_fines)
         menu()
